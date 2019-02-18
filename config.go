@@ -89,3 +89,11 @@ func newLogger(verbosity int) logr.Logger {
 func (c *SignaliloConfig) InitLogger() {
 	c.Logger = newLogger(c.LogLevel)
 }
+
+func MockConfig() *SignaliloConfig {
+	config := new(SignaliloConfig)
+	config.LogLevel = 1
+
+	config.InitLogger()
+	return config
+}
