@@ -129,7 +129,7 @@ func webhook(w http.ResponseWriter, r *http.Request, c *SignaliloConfig) {
 	asJSON(w, http.StatusOK, "success")
 }
 
-func checkOrCreateHost(icinga *icinga2.WebClient, hostname string, l logr.Logger) (icinga2.Host, error) {
+func checkOrCreateHost(icinga icinga2.Client, hostname string, l logr.Logger) (icinga2.Host, error) {
 	host, err := icinga.GetHost(hostname)
 	if err == nil {
 		l.Infof("found host: %+v", hostname)
@@ -149,7 +149,7 @@ func checkOrCreateHost(icinga *icinga2.WebClient, hostname string, l logr.Logger
 	return host, err
 }
 
-func updateOrCreateService(icinga *icinga2.WebClient,
+func updateOrCreateService(icinga icinga2.Client,
 	hostname string,
 	service string,
 	alert template.Alert,
