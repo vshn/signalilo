@@ -1,0 +1,60 @@
+groups:
+- name: ./rules.conf
+  rules:
+  # service availability alert
+  - alert: service_down
+    expr: up == 0
+    labels:
+      service: Platform
+      severity: major
+      correlate: service_up,service_down
+    annotations:
+      description: Service {{ $labels.instance }} is unavailable.
+      value: DOWN ({{ $value }})
+      runbook: http://wiki.alerta.io/RunBook/{app}/Event/{alertname}
+
+  - alert: service_up
+    expr: up == 1
+    labels:
+      service: Platform
+      severity: normal
+      correlate: service_up,service_down
+    annotations:
+      description: Service {{ $labels.instance }} is available.
+      value: UP ({{ $value }})
+
+  # system load alert
+  - alert: high_load
+    expr: node_load1 > 0.5
+    annotations:
+      description: '{{ $labels.instance }} of job {{ $labels.job }} is under high load.'
+      summary: Instance {{ $labels.instance }} under high load
+      value: '{{ $value }}'
+
+  # disk space alert (with resource=<instance>:<mountpoint> event=disk_space
+  - alert: disk_space
+    expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) * 100 / node_filesystem_size_bytes > 5
+    labels:
+      instance: '{{ $labels.instance }}:{{ $labels.mountpoint }}'
+    annotations:
+      value: '{{ humanize $value }}%'
+
+  # disk space alert (with resource=<instance> event=disk_util:<mountpoint>
+  - alert: disk_util
+    expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) * 100 / node_filesystem_size_bytes > 5
+    labels:
+      instance: '{{ $labels.instance }}'
+      event: '{alertname}:{{ $labels.mountpoint }}'  # python templating rendered by Alerta
+    annotations:
+      value: '{{ humanize $value }}%'
+
+  # API request rate alert
+  - alert: api_requests_high
+    expr: rate(alerta_alerts_queries_count{instance="alerta:8080",job="alerta"}[5m]) > 5
+    labels:
+      service: Alerta,Platform
+      severity: major
+    annotations:
+      description: API request rate of {{ $value | printf "%.1f" }} req/s is high (threshold 5 req/s)
+      summary: API request rate high
+      value: '{{ humanize $value }} req/s'

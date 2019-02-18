@@ -1,0 +1,137 @@
+version: '3'
+
+services:
+  prometheus:
+    image: prom/prometheus
+    user: root
+    volumes:
+      - ./config:/prometheus
+      - dataprom:/data
+    command:
+      - '--config.file=/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/data'
+    ports:
+      - 9090:9090
+    depends_on:
+      - alertmanager
+    restart: always
+    networks:
+      - promnet
+
+  alertmanager:
+    image: prom/alertmanager
+    volumes:
+      - ./config:/prometheus
+      - dataalertmanager:/data
+    command:
+      - '--config.file=/prometheus/alertmanager.yml'
+      - '--storage.path=/data'
+    ports:
+      - 9093:9093
+    networks:
+      - promnet
+
+  node:
+    image: prom/node-exporter
+    ports:
+      - 9100:9100
+    restart: always
+    networks:
+      - promnet
+
+  cadvisor:
+    image: google/cadvisor
+    ports:
+      - 9880:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - promnet
+
+  collectd:
+    image: prom/collectd-exporter
+    ports:
+      - 9103:9103
+    restart: always
+    networks:
+      - promnet
+
+  alerta:
+    image: alerta/alerta-web
+    ports:
+      - 9080:8080
+    depends_on:
+      - db
+    environment:
+      - DEBUG=1  # remove this line to turn DEBUG off
+      - DATABASE_URL=mongodb://db:27017/monitoring
+      - AUTH_REQUIRED=False
+      - ADMIN_USERS=admin@alerta.io
+      - ALLOWED_EMAIL_DOMAIN=${ALLOWED_EMAIL_DOMAIN:-*}
+      - PLUGINS=reject,blackout,prometheus
+      - INSTALL_PLUGINS=prometheus
+      - ALERTMANAGER_API_URL=http://alertmanager:9093
+    restart: always
+    networks:
+      - promnet
+      - dbnet
+
+  db:
+    image: mongo
+    volumes:
+      - datamongo:/data/db
+    restart: always
+    networks:
+      - dbnet
+
+  icinga2:
+    image: jordan/icinga2
+    restart: on-failure:5
+    hostname: icinga2
+    environment:
+      - ICINGA2_FEATURE_GRAPHITE=0
+      - DEFAULT_MYSQL_HOST=mysql
+      - MYSQL_ROOT_PASSWORD=Passw0rd
+    volumes:
+      - ./data/icinga/cache:/var/cache/icinga2
+      - ./data/icinga/certs:/etc/apache2/ssl
+      - ./data/icinga/etc/icinga2:/etc/icinga2
+      - ./data/icinga/etc/icingaweb2:/etc/icingaweb2
+      - ./data/icinga/lib/icinga:/var/lib/icinga2
+      - ./data/icinga/lib/php/sessions:/var/lib/php/sessions
+      - ./data/icinga/log/apache2:/var/log/apache2
+      - ./data/icinga/log/icinga2:/var/log/icinga2
+      - ./data/icinga/log/icingaweb2:/var/log/icingaweb2
+      - ./data/icinga/log/mysql:/var/log/mysql
+      - ./data/icinga/spool:/var/spool/icinga2
+    ports:
+      - 8080:80
+      - 8443:443
+      - 5665:5665
+    networks:
+      - promnet
+      - dbnet
+
+  mysql:
+    image: mariadb:10.1
+    environment:
+      - MYSQL_ROOT_PASSWORD=Passw0rd
+    volumes:
+      - datamysql:/var/lib/mysql
+    networks:
+      - dbnet
+
+networks:
+  promnet:
+    driver: bridge
+  dbnet:
+    driver: bridge
+
+volumes:
+  dataprom:
+  dataalertmanager:
+  datamongo:
+  datamysql:
