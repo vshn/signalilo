@@ -1,16 +1,16 @@
-package main
+package webhook
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 	"github.com/corvus-ch/logr/buffered"
+	tassert "github.com/stretchr/testify/assert"
 )
 
 func isJSON(s string) bool {
@@ -18,36 +18,19 @@ func isJSON(s string) bool {
 	return json.Unmarshal([]byte(s), &js) == nil
 }
 
-func TestAsJSON(t *testing.T) {
-	rr := httptest.NewRecorder()
+func mockEchoHandler(w http.ResponseWriter, r *http.Request) {
+	asJSON(w, http.StatusOK, "ok")
+}
 
-	asJSON(rr, http.StatusOK, "ok")
+func TestAsJSON(t *testing.T) {
+	assert := tassert.New(t)
+
+	handler := http.HandlerFunc(mockEchoHandler)
 
 	// verify response properties
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("asJSON set wrong status code: got %v, want %v",
-			status, http.StatusOK)
-	}
-
-	response := rr.Body.String()
-	if !isJSON(response) {
-		t.Errorf("asJSON returned something that isn't JSON: %v",
-			response)
-	}
-
-	responseJSON := responseJSON{}
-	if err := json.NewDecoder(rr.Body).Decode(&responseJSON); err != nil {
-		t.Errorf("asJSON returned something that can't be decoded as responseJSON: %v",
-			response)
-	}
-	if responseJSON.Status != http.StatusOK {
-		t.Errorf("asJSON mangled response status: expected %v, got %v",
-			http.StatusOK, responseJSON.Status)
-	}
-	if responseJSON.Message != "ok" {
-		t.Errorf("asJSON mangled response status: expected %v, got %v",
-			"ok", responseJSON.Message)
-	}
+	assert.HTTPSuccess(handler, "GET", "http://example.com/webhook", nil)
+	response := tassert.HTTPBody(handler, "GET", "http://example.com/webhook", nil)
+	assert.JSONEq(response, `{ "Status": 200, "Message": "ok" }`)
 }
 
 func checkLogMessage(t *testing.T, buf *bytes.Buffer, expected_msg string) {

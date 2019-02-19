@@ -1,8 +1,9 @@
-package main
+package config
 
 import (
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 	"github.com/bketelsen/logr"
+	"github.com/corvus-ch/logr/buffered"
 	log "github.com/corvus-ch/logr/logrus"
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
@@ -17,6 +18,17 @@ type icingaConfig struct {
 	InsecureTLS bool   `mapstructure:"insecure_tls"`
 }
 
+type Configuration interface {
+	GetConfigFile() string
+	GetConfig() *SignaliloConfig
+
+	GetLogger() logr.Logger
+	SetLogger(logger logr.Logger)
+
+	GetIcingaClient() icinga2.Client
+	SetIcingaClient(icinga icinga2.Client)
+}
+
 type alertManagerConfig struct {
 	BearerToken string `mapstructure:"bearer_token"`
 }
@@ -29,17 +41,17 @@ type SignaliloConfig struct {
 	AlertManagerConfig alertManagerConfig `mapstructure:"alertmanager"`
 	HeartbeatInterval  int                `mapstructure:"heartbeat_interval"`
 	LogLevel           int                `mapstructure:"log_level"`
-	Logger             logr.Logger
-	IcingaClient       *icinga2.WebClient
 }
 
-func LoadConfig(l logr.Logger) *SignaliloConfig {
+func LoadConfig(configuration Configuration) (*SignaliloConfig, error) {
+	l := configuration.GetLogger()
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/etc/signalilo")
+	viper.SetConfigFile(configuration.GetConfigFile())
 	err := viper.ReadInConfig()
 	if err != nil {
-		l.Errorf("Error reading config file: %v", err)
+		return nil, err
 	}
 	config := new(SignaliloConfig)
 	viper.Unmarshal(config)
@@ -48,19 +60,28 @@ func LoadConfig(l logr.Logger) *SignaliloConfig {
 		l.Infof("Config file change: %v", e.Name)
 		viper.Unmarshal(config)
 		// Reinitialize logger, so we pick up changes to "log_level"
-		config.InitLogger()
+		configuration.SetLogger(NewLogger(config.LogLevel))
 		// Reinitialize icinga client, so we pick up changes to icinga
 		// config
-		config.InitIcingaClient()
+		icinga, err := newIcingaClient(config)
+		if err != nil {
+			l.Errorf("Unable to create new icinga client: %s", err)
+		} else {
+			configuration.SetIcingaClient(icinga)
+		}
 	})
 	// do first init of Logger and IcingaClient
-	config.InitLogger()
-	config.InitIcingaClient()
-	return config
+	configuration.SetLogger(NewLogger(config.LogLevel))
+	icinga, err := newIcingaClient(config)
+	if err != nil {
+		l.Errorf("Unable to create new icinga client: %s", err)
+	} else {
+		configuration.SetIcingaClient(icinga)
+	}
+	return config, nil
 }
 
-func (c *SignaliloConfig) InitIcingaClient() error {
-	l := c.Logger
+func newIcingaClient(c *SignaliloConfig) (icinga2.Client, error) {
 	client, err := icinga2.New(icinga2.WebClient{
 		URL:         c.IcingaConfig.URL,
 		Username:    c.IcingaConfig.User,
@@ -68,14 +89,12 @@ func (c *SignaliloConfig) InitIcingaClient() error {
 		Debug:       false,
 		InsecureTLS: c.IcingaConfig.InsecureTLS})
 	if err != nil {
-		l.Errorf("Error creating Icinga client: %v\n", err)
-	} else {
-		c.IcingaClient = client
+		return nil, err
 	}
-	return err
+	return client, nil
 }
 
-func newLogger(verbosity int) logr.Logger {
+func NewLogger(verbosity int) logr.Logger {
 	jf := new(logrus.JSONFormatter)
 	ll := &logrus.Logger{
 		Out:       os.Stdout,
@@ -86,14 +105,6 @@ func newLogger(verbosity int) logr.Logger {
 	return log.New(verbosity, ll)
 }
 
-func (c *SignaliloConfig) InitLogger() {
-	c.Logger = newLogger(c.LogLevel)
-}
-
-func MockConfig() *SignaliloConfig {
-	config := new(SignaliloConfig)
-	config.LogLevel = 1
-
-	config.InitLogger()
-	return config
+func MockLogger(verbosity int) logr.Logger {
+	return buffered.New(verbosity)
 }

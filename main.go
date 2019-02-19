@@ -1,36 +1,14 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"os"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-func healthz(w http.ResponseWriter, r *http.Request, c *SignaliloConfig) {
-	fmt.Fprint(w, "ok")
-	c.Logger.V(2).Infof("Config: %+v", c)
-}
-
 func main() {
-	verbosity := 1
-	log := newLogger(verbosity)
-	log.Info("Starting signalilo alertmanager-icinga2 bridge")
+	app := kingpin.New("signalilo", "Signalilo takes in Alertmanager alerts through a webhook, translates them into Icinga2 services and posts them to Icinga using the Icinga API").Version("0.0.1")
+	configureServeCommand(app)
 
-	config := LoadConfig(log)
-	log = config.Logger
-
-	log.V(2).Infof("Config: %+v", config)
-
-	http.HandleFunc("/healthz",
-		func(w http.ResponseWriter, r *http.Request) { healthz(w, r, config) })
-	http.HandleFunc("/webhook",
-		func(w http.ResponseWriter, r *http.Request) { webhook(w, r, config) })
-
-	listenAddress := ":8888"
-	if os.Getenv("PORT") != "" {
-		listenAddress = ":" + os.Getenv("PORT")
-	}
-
-	log.Infof("listening on: %v", listenAddress)
-	log.Error(http.ListenAndServe(listenAddress, nil))
+	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
