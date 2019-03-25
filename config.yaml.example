@@ -1,0 +1,12 @@
+customer: testcustomer-000001
+servicehost: localhost
+icinga_api:
+  url: https://localhost:5665
+  username: icinga_user
+  password: icinga_user_pw
+  insecure_tls: true
+alertmanager:
+  bearer_token: aaaaaa
+gc_interval: 120
+heartbeat_interval: 60
+log_level: 2
