@@ -4,32 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"git.vshn.net/appuio/signalilo/config"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 	"github.com/prometheus/alertmanager/template"
 )
 
-type HostStruct struct {
-	Name  string    `json:"name"`
-	Type  string    `json:"type"`
-	Attrs HostAttrs `json:"attrs"`
-	Meta  struct{}  `json:"meta"`
-	Joins struct{}  `json:"stuct"`
-}
-
-type HostAttrs struct {
-	ActionURL    string      `json:"action_url"`
-	Address      string      `json:"address"`
-	Address6     string      `json:"address6"`
-	CheckCommand string      `json:"check_command"`
-	DisplayName  string      `json:"display_name"`
-	Groups       []string    `json:"groups"`
-	Notes        string      `json:"notes"`
-	NotesURL     string      `json:"notes_url"`
-	Templates    []string    `json:"templates"`
-	Vars         interface{} `json:"vars"`
-}
 type responseJSON struct {
 	Status  int
 	Message string
@@ -68,11 +49,12 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	}
 	l.Infof("Alerts: GroupLabels=%v, CommonLabels=%v", data.GroupLabels, data.CommonLabels)
 
-	hostname := data.CommonLabels["customer"] + ".local"
-	l.V(2).Infof("Checking/creating host for %v", hostname)
-	host, err := checkOrCreateHost(icinga, hostname, l)
+	serviceHost := c.GetConfig().HostName
+	l.V(2).Infof("Check service host: %v", serviceHost)
+	host, err := icinga.GetHost(serviceHost)
 	if err != nil {
-		l.Errorf("Error in checkOrCreateHost for %v: %v\n", host, err)
+		l.Errorf("Did not find service host %v: %v\n", host, err)
+		os.Exit(1)
 	}
 
 	for _, alert := range data.Alerts {
@@ -82,7 +64,7 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		l.V(2).Infof("Alert: message=%v", alert.Annotations["message"])
 		// Create or update service for alert in icinga
 		service := computeServiceName(data, alert)
-		svc, err := updateOrCreateService(icinga, hostname, service, alert, l)
+		svc, err := updateOrCreateService(icinga, serviceHost, service, alert, l)
 		if err != nil {
 			l.Errorf("Error in checkOrCreateService for %v: %v", service, err)
 		}

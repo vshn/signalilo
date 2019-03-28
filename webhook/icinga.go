@@ -34,23 +34,6 @@ func severityToExitStatus(severity string) int {
 	return exitstatus
 }
 
-func checkOrCreateHost(icinga icinga2.Client, hostname string, l logr.Logger) (icinga2.Host, error) {
-	host, err := icinga.GetHost(hostname)
-	if err == nil {
-		l.Infof("found host: %+v", hostname)
-		return host, nil
-	}
-	l.Infof("creating host: %+v\n", hostname)
-	host = icinga2.Host{
-		Name:         hostname,
-		Address:      "10.144.1.226",
-		CheckCommand: "hostalive",
-		Vars:         icinga2.Vars{"os": "Linux"},
-	}
-	err = icinga.CreateHost(host)
-	return host, err
-}
-
 func updateOrCreateService(icinga icinga2.Client,
 	hostname string,
 	service string,
