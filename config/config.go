@@ -18,6 +18,7 @@ type icingaConfig struct {
 	User        string `mapstructure:"username"`
 	Password    string `mapstructure:"password"`
 	InsecureTLS bool   `mapstructure:"insecure_tls"`
+	Debug       bool   `mapstructure:"debug"`
 }
 
 type Configuration interface {
@@ -36,13 +37,14 @@ type alertManagerConfig struct {
 }
 
 type SignaliloConfig struct {
-	Customer           string             `mapstructure:"customer"`
-	ServiceHost        string             `mapstructure:"servicehost"`
+	UUID               string             `mapstructure:"uuid"`
+	HostName           string             `mapstructure:"host_name"`
 	IcingaConfig       icingaConfig       `mapstructure:"icinga_api"`
-	GcInterval         int                `mapstructure:"gc_interval"`
+	GcInterval         time.Duration      `mapstructure:"gc_interval"`
 	AlertManagerConfig alertManagerConfig `mapstructure:"alertmanager"`
 	HeartbeatInterval  time.Duration      `mapstructure:"heartbeat_interval"`
 	LogLevel           int                `mapstructure:"log_level"`
+	KeepFor            time.Duration      `mapstructure:"keep_for"`
 }
 
 func LoadConfig(configuration Configuration) (*SignaliloConfig, error) {
@@ -52,12 +54,17 @@ func LoadConfig(configuration Configuration) (*SignaliloConfig, error) {
 	viper.AddConfigPath("/etc/signalilo")
 	viper.SetConfigFile(configuration.GetConfigFile())
 	viper.SetDefault("HeartbeatInterval", 60*time.Second)
+	viper.SetDefault("KeepFor", 7*24*time.Hour)
+	viper.SetDefault("IcingaConfig.Debug", false)
 	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
 	}
 	config := new(SignaliloConfig)
 	viper.Unmarshal(config)
+	if err != nil {
+		return nil, err
+	}
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		l.Infof("Config file change: %v", e.Name)
@@ -89,7 +96,7 @@ func newIcingaClient(c *SignaliloConfig) (icinga2.Client, error) {
 		URL:         c.IcingaConfig.URL,
 		Username:    c.IcingaConfig.User,
 		Password:    c.IcingaConfig.Password,
-		Debug:       false,
+		Debug:       c.IcingaConfig.Debug,
 		InsecureTLS: c.IcingaConfig.InsecureTLS})
 	if err != nil {
 		return nil, err
