@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -117,4 +118,46 @@ func NewLogger(verbosity int) logr.Logger {
 
 func MockLogger(verbosity int) logr.Logger {
 	return buffered.New(verbosity)
+}
+
+type MockConfiguration struct {
+	configFile   string
+	config       *SignaliloConfig
+	logger       logr.Logger
+	icingaClient icinga2.Client
+}
+
+func (c MockConfiguration) GetConfigFile() string {
+	return c.configFile
+}
+func (c MockConfiguration) GetConfig() *SignaliloConfig {
+	return c.config
+}
+func (c MockConfiguration) GetLogger() logr.Logger {
+	return c.logger
+}
+func (c MockConfiguration) GetIcingaClient() icinga2.Client {
+	return c.icingaClient
+}
+func (c MockConfiguration) SetConfig(config *SignaliloConfig) {
+	c.config = config
+}
+func (c MockConfiguration) SetLogger(logger logr.Logger) {
+	c.logger = logger
+}
+func (c MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
+	c.icingaClient = icinga
+}
+
+func NewMockConfiguration(configFile string, verbosity int) Configuration {
+	mockCfg := MockConfiguration{}
+	mockCfg.configFile = configFile
+	signaliloCfg, err := LoadConfig(mockCfg)
+	if err != nil {
+		fmt.Printf("Error Loading mock config: %v", err)
+	}
+	mockCfg.config = signaliloCfg
+	mockCfg.logger = MockLogger(mockCfg.config.LogLevel)
+	// TODO: set mockCfg.icingaClient as mocked IcingaClient
+	return mockCfg
 }

@@ -57,23 +57,41 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		os.Exit(1)
 	}
 
+	sameAlertName := false
+	groupedAlertName, sameAlertName := data.GroupLabels["alertname"]
+	if sameAlertName {
+		l.V(2).Infof("Grouped alerts with matching alertname: %v", groupedAlertName)
+	} else if len(data.Alerts) > 1 {
+		l.V(2).Infof("Grouped alerts without matching alertname: %d alerts", len(data.Alerts))
+	}
+
 	for _, alert := range data.Alerts {
-		//l.Infof("Alert: status=%s,Labels=%v,Annotations=%v", alert.Status, alert.Labels, alert.Annotations)
+		l.V(2).Infof("Alert: alertname=%v", alert.Labels["alertname"])
 
 		l.V(2).Infof("Alert: severity=%v", alert.Labels["severity"])
 		l.V(2).Infof("Alert: message=%v", alert.Annotations["message"])
-		// Create or update service for alert in icinga
-		service := computeServiceName(data, alert)
-		svc, err := updateOrCreateService(icinga, serviceHost, service, alert, c)
+
+		// Compute service and display name for alert
+		serviceName, err := computeServiceName(data, alert, l)
 		if err != nil {
-			l.Errorf("Error in checkOrCreateService for %v: %v", service, err)
+			l.Errorf("Unable to compute internal service name: %v", err)
+		}
+		displayName, err := computeDisplayName(data, alert)
+		if err != nil {
+			l.Errorf("Unable to compute service display name: %v", err)
+		}
+
+		// Update or create service in icinga
+		svc, err := updateOrCreateService(icinga, serviceHost, serviceName, displayName, alert, c)
+		if err != nil {
+			l.Errorf("Error in checkOrCreateService for %v: %v", serviceName, err)
 		}
 		err = icinga.ProcessCheckResult(svc, icinga2.Action{
-			ExitStatus:   severityToExitStatus(alert.Labels["severity"]),
-			PluginOutput: alert.Annotations["value"],
+			ExitStatus:   severityToExitStatus(alert.Status, alert.Labels["severity"]),
+			PluginOutput: alert.Annotations["message"],
 		})
 		if err != nil {
-			l.Errorf("Error in ProcessCheckResult for %v: %v", service, err)
+			l.Errorf("Error in ProcessCheckResult for %v: %v", serviceName, err)
 		}
 	}
 
