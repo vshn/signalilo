@@ -3,8 +3,8 @@ package webhook
 import (
 	"strings"
 
+	"git.vshn.net/appuio/signalilo/config"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
-	"github.com/bketelsen/logr"
 	"github.com/prometheus/alertmanager/template"
 )
 
@@ -38,15 +38,21 @@ func updateOrCreateService(icinga icinga2.Client,
 	hostname string,
 	service string,
 	alert template.Alert,
-	l logr.Logger) (icinga2.Service, error) {
+	c config.Configuration) (icinga2.Service, error) {
+
+	l := c.GetLogger()
+	config := c.GetConfig()
 
 	// build Vars map
 	serviceVars := make(icinga2.Vars)
+	// Set defaults
+	serviceVars["bridge_uuid"] = config.UUID
+	serviceVars["keep_for"] = config.KeepFor
 	for k, v := range alert.Labels {
 		serviceVars["label_"+k] = v
 	}
 	for k, v := range alert.Annotations {
-		serviceVars["Annotation_"+k] = v
+		serviceVars["annotation_"+k] = v
 	}
 	serviceVars["dummy_text"] = "No passive check result received"
 	serviceVars["dummy_state"] = 3

@@ -64,7 +64,7 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		l.V(2).Infof("Alert: message=%v", alert.Annotations["message"])
 		// Create or update service for alert in icinga
 		service := computeServiceName(data, alert)
-		svc, err := updateOrCreateService(icinga, serviceHost, service, alert, l)
+		svc, err := updateOrCreateService(icinga, serviceHost, service, alert, c)
 		if err != nil {
 			l.Errorf("Error in checkOrCreateService for %v: %v", service, err)
 		}
