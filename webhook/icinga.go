@@ -22,7 +22,9 @@ func validateServiceName(serviceName string) bool {
 func MapToStableString(data map[string]string) string {
 	var keys []string
 	for k := range data {
-		keys = append(keys, k)
+		if k != "severity" {
+			keys = append(keys, k)
+		}
 	}
 	sort.Strings(keys)
 
