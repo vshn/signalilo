@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"git.vshn.net/appuio/signalilo/config"
+	"git.vshn.net/appuio/signalilo/gc"
 	"git.vshn.net/appuio/signalilo/webhook"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 	"github.com/bketelsen/logr"
@@ -23,6 +24,7 @@ type ServeCommand struct {
 	logger          logr.Logger
 	icingaClient    icinga2.Client
 	heartbeatTicker *time.Ticker
+	gcTicker        *time.Ticker
 }
 
 // GetConfigFile implements config.Configuration
@@ -102,6 +104,18 @@ func (s *ServeCommand) startHeartbeat() error {
 	return nil
 }
 
+func (s *ServeCommand) startServiceGC() error {
+	gcInterval := s.GetConfig().GcInterval
+	s.gcTicker = time.NewTicker(gcInterval)
+	s.logger.Infof("Starting service garbage collector: interval %v", gcInterval)
+	go func() {
+		for ts := range s.gcTicker.C {
+			gc.Collect(ts, s)
+		}
+	}()
+	return nil
+}
+
 func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 	http.HandleFunc("/healthz",
 		func(w http.ResponseWriter, r *http.Request) { healthz(w, r, s) })
@@ -112,6 +126,9 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 	s.logger.Infof("Keep for: %v", s.GetConfig().KeepFor)
 
 	if err := s.startHeartbeat(); err != nil {
+		return err
+	}
+	if err := s.startServiceGC(); err != nil {
 		return err
 	}
 
