@@ -92,6 +92,8 @@ func updateOrCreateService(icinga icinga2.Client,
 	l := c.GetLogger()
 	config := c.GetConfig()
 
+	status := severityToExitStatus(alert.Status, alert.Labels["severity"])
+
 	// build Vars map
 	serviceVars := make(icinga2.Vars)
 	// Set defaults
@@ -126,12 +128,15 @@ func updateOrCreateService(icinga icinga2.Client,
 		if err != nil {
 			return serviceData, err
 		}
-	} else {
+	} else if status > 0 {
 		l.Infof("creating service: %+v\n", serviceName)
 		err := icinga.CreateService(serviceData)
 		if err != nil {
 			return serviceData, err
 		}
+	} else {
+		l.Infof("Not creating service %v; status = %v", serviceName, status)
+		return icinga2.Service{}, nil
 	}
 	return serviceData, nil
 }

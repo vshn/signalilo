@@ -86,6 +86,11 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		if err != nil {
 			l.Errorf("Error in checkOrCreateService for %v: %v", serviceName, err)
 		}
+		// If we got an emtpy service object, the service was not
+		// created, don't try to call process-check-result
+		if svc.Name == "" {
+			continue
+		}
 		err = icinga.ProcessCheckResult(svc, icinga2.Action{
 			ExitStatus:   severityToExitStatus(alert.Status, alert.Labels["severity"]),
 			PluginOutput: alert.Annotations["message"],
