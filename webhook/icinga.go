@@ -9,7 +9,6 @@ import (
 
 	"git.vshn.net/appuio/signalilo/config"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
-	"github.com/bketelsen/logr"
 	"github.com/prometheus/alertmanager/template"
 )
 
@@ -39,9 +38,14 @@ func MapToStableString(data map[string]string) string {
 func computeServiceName(
 	data template.Data,
 	alert template.Alert,
-	l logr.Logger) (string, error) {
+	c config.Configuration) (string, error) {
+
+	l := c.GetLogger()
 
 	hash := sha256.New()
+	// use bridge uuid to ensure we can't accidentally touch another
+	// instance's services
+	hash.Write([]byte(c.GetConfig().UUID))
 	hash.Write([]byte(MapToStableString(alert.Labels)))
 	// 8 bytes gives us 16 characters
 	labelhash := fmt.Sprintf("%x", hash.Sum(nil)[:8])

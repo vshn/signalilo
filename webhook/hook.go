@@ -72,7 +72,7 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		l.V(2).Infof("Alert: message=%v", alert.Annotations["message"])
 
 		// Compute service and display name for alert
-		serviceName, err := computeServiceName(data, alert, l)
+		serviceName, err := computeServiceName(data, alert, c)
 		if err != nil {
 			l.Errorf("Unable to compute internal service name: %v", err)
 		}
