@@ -103,18 +103,19 @@ func updateOrCreateService(icinga icinga2.Client,
 	for k, v := range alert.Annotations {
 		serviceVars["annotation_"+k] = v
 	}
-	serviceVars["dummy_text"] = "No passive check result received"
-	serviceVars["dummy_state"] = 3
 	// Create service attrs object
 	serviceData := icinga2.Service{
-		Name:         serviceName,
-		DisplayName:  displayName,
-		HostName:     hostname,
-		CheckCommand: "dummy",
-		Vars:         serviceVars,
-		Notes:        alert.Annotations["description"],
-		ActionURL:    alert.GeneratorURL,
-		NotesURL:     alert.Annotations["runbook_url"],
+		Name:               serviceName,
+		DisplayName:        displayName,
+		HostName:           hostname,
+		CheckCommand:       "dummy",
+		EnableActiveChecks: false,
+		Vars:               serviceVars,
+		Notes:              alert.Annotations["description"],
+		ActionURL:          alert.GeneratorURL,
+		NotesURL:           alert.Annotations["runbook_url"],
+		CheckInterval:      43200,
+		RetryInterval:      43200,
 	}
 
 	icingaSvc, err := icinga.GetService(serviceData.FullName())

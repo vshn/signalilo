@@ -100,8 +100,8 @@ github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371 h1:SWV2fHctRpRrp49
 github.com/shurcooL/httpfs v0.0.0-20171119174359-809beceb2371/go.mod h1:ZY1cvUeJuFPAdZ/B6v7RHavJWZn2YPVFQ1OSXhCGOkg=
 github.com/shurcooL/vfsgen v0.0.0-20180825020608-02ddb050ef6b h1:rKVW5h3pEu8gGxD+ZlOmBvFYAxXLCYeQv/eg+t6QvLQ=
 github.com/shurcooL/vfsgen v0.0.0-20180825020608-02ddb050ef6b/go.mod h1:TrYk7fJVaAttu97ZZKrO9UbRa8izdowaMIZcxYMbVaw=
-github.com/simu/go-icinga2-client v0.0.1 h1:g+LaAUb6qQmQQ3Dv6Ym193YNzMXwTJoW+1O4lVFEmT0=
-github.com/simu/go-icinga2-client v0.0.1/go.mod h1:iSVb0Sp2p5078JtRT+Jh7sPnZnRXBHL1hLXjkNes7cs=
+github.com/simu/go-icinga2-client v0.0.2 h1:BPS95qa8sHuViPLExehb1q7VY1b7lC4Ejf6DRHqbafQ=
+github.com/simu/go-icinga2-client v0.0.2/go.mod h1:iSVb0Sp2p5078JtRT+Jh7sPnZnRXBHL1hLXjkNes7cs=
 github.com/sirupsen/logrus v1.3.0 h1:hI/7Q+DtNZ2kINb6qt/lS+IyXnHQe9e90POfeewL/ME=
 github.com/sirupsen/logrus v1.3.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
