@@ -8,5 +8,5 @@ icinga_api:
 alertmanager:
   bearer_token: aaaaaa
 gc_interval: 120
-heartbeat_interval: 60
+heartbeat_interval: 60s
 log_level: 2

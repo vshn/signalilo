@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"git.vshn.net/appuio/signalilo/config"
 	"git.vshn.net/appuio/signalilo/webhook"
@@ -14,12 +16,13 @@ import (
 // ServeCommand holds all the configuration and objects necessary to serve the
 // Signalilo webhook
 type ServeCommand struct {
-	configFile   string
-	port         int
-	logLevel     int
-	config       *config.SignaliloConfig
-	logger       logr.Logger
-	icingaClient icinga2.Client
+	configFile      string
+	port            int
+	logLevel        int
+	config          *config.SignaliloConfig
+	logger          logr.Logger
+	icingaClient    icinga2.Client
+	heartbeatTicker *time.Ticker
 }
 
 // GetConfigFile implements config.Configuration
@@ -57,14 +60,59 @@ func healthz(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	c.GetLogger().V(3).Infof("Config: %+v", c.GetConfig())
 }
 
+func (s *ServeCommand) heartbeat(ts time.Time) error {
+	icinga := s.GetIcingaClient()
+	config := s.GetConfig()
+	l := s.GetLogger()
+	_, err := icinga.GetHost(config.ServiceHost)
+	if err != nil {
+		l.Errorf("heartbeat: unable to get servicehost: %v", err)
+		return err
+	}
+	svc, err := icinga.GetService(fmt.Sprintf("%v!heartbeat", config.ServiceHost))
+	if err != nil {
+		l.Errorf("heartbeat: unable to get heartbeat service: %v", err)
+		return err
+	}
+	msg := fmt.Sprintf("OK: %v", ts.Format(time.RFC3339))
+	l.Infof("Sending heartbeat: '%v'", msg)
+	err = icinga.ProcessCheckResult(svc, icinga2.Action{
+		ExitStatus:   0,
+		PluginOutput: msg,
+	})
+	if err != nil {
+		l.Errorf("heartbeat: process_check_result: %v", err)
+	}
+	return nil
+}
+
+func (s *ServeCommand) startHeartbeat() error {
+	hbInterval := s.GetConfig().HeartbeatInterval
+	s.heartbeatTicker = time.NewTicker(hbInterval)
+	s.logger.Infof("Starting heartbeat: interval %v", hbInterval)
+	err := s.heartbeat(time.Now())
+	if err != nil {
+		return errors.New(fmt.Sprintf("Unable to send initial heartbeat: %v", err))
+	}
+	go func() {
+		for ts := range s.heartbeatTicker.C {
+			s.heartbeat(ts)
+		}
+	}()
+	return nil
+}
+
 func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 	http.HandleFunc("/healthz",
 		func(w http.ResponseWriter, r *http.Request) { healthz(w, r, s) })
 	http.HandleFunc("/webhook",
 		func(w http.ResponseWriter, r *http.Request) { webhook.Webhook(w, r, s) })
 
-	listenAddress := fmt.Sprintf(":%d", s.port)
+	if err := s.startHeartbeat(); err != nil {
+		return err
+	}
 
+	listenAddress := fmt.Sprintf(":%d", s.port)
 	s.logger.Infof("listening on: %v", listenAddress)
 	return http.ListenAndServe(listenAddress, nil)
 }

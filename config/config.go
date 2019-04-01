@@ -1,6 +1,9 @@
 package config
 
 import (
+	"os"
+	"time"
+
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 	"github.com/bketelsen/logr"
 	"github.com/corvus-ch/logr/buffered"
@@ -8,7 +11,6 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"os"
 )
 
 type icingaConfig struct {
@@ -39,7 +41,7 @@ type SignaliloConfig struct {
 	IcingaConfig       icingaConfig       `mapstructure:"icinga_api"`
 	GcInterval         int                `mapstructure:"gc_interval"`
 	AlertManagerConfig alertManagerConfig `mapstructure:"alertmanager"`
-	HeartbeatInterval  int                `mapstructure:"heartbeat_interval"`
+	HeartbeatInterval  time.Duration      `mapstructure:"heartbeat_interval"`
 	LogLevel           int                `mapstructure:"log_level"`
 }
 
@@ -49,6 +51,7 @@ func LoadConfig(configuration Configuration) (*SignaliloConfig, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/etc/signalilo")
 	viper.SetConfigFile(configuration.GetConfigFile())
+	viper.SetDefault("HeartbeatInterval", 60*time.Second)
 	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
