@@ -12,13 +12,17 @@ import (
 	"github.com/prometheus/alertmanager/template"
 )
 
-// check that computed service name matches constraints given by icinga
+// validateServiceName checks that computed service name matches constraints
+// given by the Icinga configuration
 func validateServiceName(serviceName string) bool {
 	re := regexp.MustCompile(`^[-+_.:,a-zA-Z0-9]{1,128}$`)
 	return re.MatchString(serviceName)
 }
 
-func MapToStableString(data map[string]string) string {
+// mapToStableString converts a map of alert labels to a string
+// representation which is stable if the same map of alert labels is provided
+// to subsequent calls of mapToStableString.
+func mapToStableString(data map[string]string) string {
 	var keys []string
 	for k := range data {
 		if k != "severity" {
@@ -34,7 +38,7 @@ func MapToStableString(data map[string]string) string {
 	return sb.String()
 }
 
-// compute the internal service name for icinga2
+// computeServiceName computes the internal service name used for Icinga2
 func computeServiceName(
 	data template.Data,
 	alert template.Alert,
@@ -46,7 +50,7 @@ func computeServiceName(
 	// use bridge uuid to ensure we can't accidentally touch another
 	// instance's services
 	hash.Write([]byte(c.GetConfig().UUID))
-	hash.Write([]byte(MapToStableString(alert.Labels)))
+	hash.Write([]byte(mapToStableString(alert.Labels)))
 	// 8 bytes gives us 16 characters
 	labelhash := fmt.Sprintf("%x", hash.Sum(nil)[:8])
 
@@ -63,10 +67,13 @@ func computeServiceName(
 	return "", fmt.Errorf("Service name '%v' doesn't match icinga2 constraints", serviceName)
 }
 
+// computeDisplayName computes a "human-readable" display name for Icinga2
 func computeDisplayName(data template.Data, alert template.Alert) (string, error) {
 	return alert.Labels["alertname"], nil
 }
 
+// severityToExitStatus computes an exitstatus which Icinga2 understands from
+// an alert's status and severity label
 func severityToExitStatus(status string, severity string) int {
 	// default to "UNKNOWN"
 	exitstatus := 3
@@ -88,6 +95,8 @@ func severityToExitStatus(status string, severity string) int {
 	return exitstatus
 }
 
+// updateOrCreateService updates or creates an Icinga2 service object from the
+// alert passed to the method
 func updateOrCreateService(icinga icinga2.Client,
 	hostname string,
 	serviceName string,

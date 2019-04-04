@@ -11,11 +11,14 @@ import (
 	"github.com/prometheus/alertmanager/template"
 )
 
+// responseJSON is used to marshal responses to incoming webhook requests to
+// JSON
 type responseJSON struct {
 	Status  int
 	Message string
 }
 
+// asJSON formats a response to a webhook request using type responseJSON
 func asJSON(w http.ResponseWriter, status int, message string) {
 	data := responseJSON{
 		Status:  status,
@@ -28,6 +31,7 @@ func asJSON(w http.ResponseWriter, status int, message string) {
 	fmt.Fprint(w, json)
 }
 
+// Webhook handles incoming webhook HTTP requests
 func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	defer r.Body.Close()
 
