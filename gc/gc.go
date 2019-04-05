@@ -8,6 +8,7 @@ import (
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 )
 
+// collectService cleans up a single service that is managed by this Signalilo
 func collectService(svc icinga2.Service, c config.Configuration) error {
 	l := c.GetLogger()
 	icinga := c.GetIcingaClient()
@@ -34,6 +35,8 @@ func collectService(svc icinga2.Service, c config.Configuration) error {
 	return nil
 }
 
+// Collect runs a garbage collection cycle to clean up any old
+// Signalilo-managed service objects
 func Collect(ts time.Time, c config.Configuration) error {
 	l := c.GetLogger()
 	l.Infof("[Collect] Running garbage collection at ts=%v", ts)
