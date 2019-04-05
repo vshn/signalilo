@@ -13,4 +13,4 @@ require (
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
-replace github.com/Nexinto/go-icinga2-client => github.com/simu/go-icinga2-client v0.0.2
+replace github.com/Nexinto/go-icinga2-client => github.com/vshn/go-icinga2-client v0.0.2
