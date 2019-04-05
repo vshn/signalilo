@@ -64,12 +64,12 @@ func (s *ServeCommand) heartbeat(ts time.Time) error {
 	icinga := s.GetIcingaClient()
 	config := s.GetConfig()
 	l := s.GetLogger()
-	_, err := icinga.GetHost(config.ServiceHost)
+	_, err := icinga.GetHost(config.HostName)
 	if err != nil {
 		l.Errorf("heartbeat: unable to get servicehost: %v", err)
 		return err
 	}
-	svc, err := icinga.GetService(fmt.Sprintf("%v!heartbeat", config.ServiceHost))
+	svc, err := icinga.GetService(fmt.Sprintf("%v!heartbeat", config.HostName))
 	if err != nil {
 		l.Errorf("heartbeat: unable to get heartbeat service: %v", err)
 		return err
@@ -107,6 +107,9 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 		func(w http.ResponseWriter, r *http.Request) { healthz(w, r, s) })
 	http.HandleFunc("/webhook",
 		func(w http.ResponseWriter, r *http.Request) { webhook.Webhook(w, r, s) })
+
+	s.logger.Infof("Signalilo UUID: %v", s.GetConfig().UUID)
+	s.logger.Infof("Keep for: %v", s.GetConfig().KeepFor)
 
 	if err := s.startHeartbeat(); err != nil {
 		return err
