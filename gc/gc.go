@@ -39,11 +39,13 @@ func Collect(ts time.Time, c config.Configuration) error {
 	l.Infof("[Collect] Running garbage collection at ts=%v", ts)
 	// Get all signalilo services
 	icinga := c.GetIcingaClient()
-	services, err := icinga.ListServices()
+	hostname := c.GetConfig().HostName
+	services, err := icinga.ListServices(fmt.Sprintf("host=%v", hostname))
 	if err != nil {
 		l.Errorf(fmt.Sprintf("[Collect] Error while listing services: %v", err))
 		return err
 	}
+	l.V(2).Infof("[Collect] Found %v services with host = %v", len(services), hostname)
 	// Iterate through services, finding ones that are managed by this
 	// Signalilo and delete services which have transitioned to OK longer
 	// than keep_for ago
