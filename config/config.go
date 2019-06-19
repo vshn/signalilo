@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -9,9 +8,7 @@ import (
 	"github.com/bketelsen/logr"
 	"github.com/corvus-ch/logr/buffered"
 	log "github.com/corvus-ch/logr/logrus"
-	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type icingaConfig struct {
@@ -23,7 +20,6 @@ type icingaConfig struct {
 }
 
 type Configuration interface {
-	GetConfigFile() string
 	GetConfig() *SignaliloConfig
 
 	GetLogger() logr.Logger
@@ -48,39 +44,10 @@ type SignaliloConfig struct {
 	KeepFor            time.Duration      `mapstructure:"keep_for"`
 }
 
-func LoadConfig(configuration Configuration) (*SignaliloConfig, error) {
+func ConfigInitialize(configuration Configuration) {
 	l := configuration.GetLogger()
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("/etc/signalilo")
-	viper.SetConfigFile(configuration.GetConfigFile())
-	viper.SetDefault("HeartbeatInterval", 60*time.Second)
-	viper.SetDefault("KeepFor", 7*24*time.Hour)
-	viper.SetDefault("IcingaConfig.Debug", false)
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil, err
-	}
-	config := new(SignaliloConfig)
-	viper.Unmarshal(config)
-	if err != nil {
-		return nil, err
-	}
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		l.Infof("Config file change: %v", e.Name)
-		viper.Unmarshal(config)
-		// Reinitialize logger, so we pick up changes to "log_level"
-		configuration.SetLogger(NewLogger(config.LogLevel))
-		// Reinitialize icinga client, so we pick up changes to icinga
-		// config
-		icinga, err := newIcingaClient(config)
-		if err != nil {
-			l.Errorf("Unable to create new icinga client: %s", err)
-		} else {
-			configuration.SetIcingaClient(icinga)
-		}
-	})
+	config := configuration.GetConfig()
+
 	// do first init of Logger and IcingaClient
 	configuration.SetLogger(NewLogger(config.LogLevel))
 	icinga, err := newIcingaClient(config)
@@ -89,7 +56,6 @@ func LoadConfig(configuration Configuration) (*SignaliloConfig, error) {
 	} else {
 		configuration.SetIcingaClient(icinga)
 	}
-	return config, nil
 }
 
 func newIcingaClient(c *SignaliloConfig) (icinga2.Client, error) {
@@ -121,17 +87,13 @@ func MockLogger(verbosity int) logr.Logger {
 }
 
 type MockConfiguration struct {
-	configFile   string
-	config       *SignaliloConfig
+	config       SignaliloConfig
 	logger       logr.Logger
 	icingaClient icinga2.Client
 }
 
-func (c MockConfiguration) GetConfigFile() string {
-	return c.configFile
-}
 func (c MockConfiguration) GetConfig() *SignaliloConfig {
-	return c.config
+	return &c.config
 }
 func (c MockConfiguration) GetLogger() logr.Logger {
 	return c.logger
@@ -139,7 +101,7 @@ func (c MockConfiguration) GetLogger() logr.Logger {
 func (c MockConfiguration) GetIcingaClient() icinga2.Client {
 	return c.icingaClient
 }
-func (c MockConfiguration) SetConfig(config *SignaliloConfig) {
+func (c MockConfiguration) SetConfig(config SignaliloConfig) {
 	c.config = config
 }
 func (c MockConfiguration) SetLogger(logger logr.Logger) {
@@ -149,14 +111,31 @@ func (c MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
 	c.icingaClient = icinga
 }
 
-func NewMockConfiguration(configFile string, verbosity int) Configuration {
-	mockCfg := MockConfiguration{}
-	mockCfg.configFile = configFile
-	signaliloCfg, err := LoadConfig(mockCfg)
-	if err != nil {
-		fmt.Printf("Error Loading mock config: %v", err)
+func NewMockConfiguration(verbosity int) Configuration {
+	// TODO: fill out defaults for MockConfiguration, maybe move default
+	// from serve.go to here
+	signaliloCfg := SignaliloConfig{
+		UUID:     "",
+		HostName: "signalilo_appuio_lab",
+		IcingaConfig: icingaConfig{
+			URL:         "localhost:5665",
+			User:        "sepp",
+			Password:    "sepp1",
+			InsecureTLS: true,
+			Debug:       false,
+		},
+		GcInterval: 1 * time.Minute,
+		AlertManagerConfig: alertManagerConfig{
+			BearerToken: "aaaaaa",
+		},
+		HeartbeatInterval: 1 * time.Minute,
+		LogLevel:          2,
+		KeepFor:           5 * time.Minute,
 	}
-	mockCfg.config = signaliloCfg
+	mockCfg := MockConfiguration{
+		config: signaliloCfg,
+	}
+	ConfigInitialize(mockCfg)
 	mockCfg.logger = MockLogger(mockCfg.config.LogLevel)
 	// TODO: set mockCfg.icingaClient as mocked IcingaClient
 	return mockCfg
