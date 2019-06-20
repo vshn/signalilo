@@ -12,11 +12,11 @@ import (
 )
 
 type icingaConfig struct {
-	URL         string `mapstructure:"url"`
-	User        string `mapstructure:"username"`
-	Password    string `mapstructure:"password"`
-	InsecureTLS bool   `mapstructure:"insecure_tls"`
-	Debug       bool   `mapstructure:"debug"`
+	URL         string
+	User        string
+	Password    string
+	InsecureTLS bool
+	Debug       bool
 }
 
 type Configuration interface {
@@ -30,18 +30,18 @@ type Configuration interface {
 }
 
 type alertManagerConfig struct {
-	BearerToken string `mapstructure:"bearer_token"`
+	BearerToken string
 }
 
 type SignaliloConfig struct {
-	UUID               string             `mapstructure:"uuid"`
-	HostName           string             `mapstructure:"host_name"`
-	IcingaConfig       icingaConfig       `mapstructure:"icinga_api"`
-	GcInterval         time.Duration      `mapstructure:"gc_interval"`
-	AlertManagerConfig alertManagerConfig `mapstructure:"alertmanager"`
-	HeartbeatInterval  time.Duration      `mapstructure:"heartbeat_interval"`
-	LogLevel           int                `mapstructure:"log_level"`
-	KeepFor            time.Duration      `mapstructure:"keep_for"`
+	UUID               string
+	HostName           string
+	IcingaConfig       icingaConfig
+	GcInterval         time.Duration
+	AlertManagerConfig alertManagerConfig
+	HeartbeatInterval  time.Duration
+	LogLevel           int
+	KeepFor            time.Duration
 }
 
 func ConfigInitialize(configuration Configuration) {
