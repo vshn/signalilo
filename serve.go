@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -20,21 +19,16 @@ type ServeCommand struct {
 	configFile      string
 	port            int
 	logLevel        int
-	config          *config.SignaliloConfig
+	config          config.SignaliloConfig
 	logger          logr.Logger
 	icingaClient    icinga2.Client
 	heartbeatTicker *time.Ticker
 	gcTicker        *time.Ticker
 }
 
-// GetConfigFile implements config.Configuration
-func (s *ServeCommand) GetConfigFile() string {
-	return s.configFile
-}
-
 // GetConfig implements config.Configuration
 func (s *ServeCommand) GetConfig() *config.SignaliloConfig {
-	return s.config
+	return &s.config
 }
 
 // GetLogger implements config.Configuration
@@ -92,11 +86,14 @@ func (s *ServeCommand) startHeartbeat() error {
 	hbInterval := s.GetConfig().HeartbeatInterval
 	s.heartbeatTicker = time.NewTicker(hbInterval)
 	s.logger.Infof("Starting heartbeat: interval %v", hbInterval)
-	err := s.heartbeat(time.Now())
-	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to send initial heartbeat: %v", err))
-	}
+
 	go func() {
+		// Send initial heartbeat from goroutine to make server
+		// startup quicker
+		err := s.heartbeat(time.Now())
+		if err != nil {
+			s.logger.Errorf("Unable to send initial heartbeat: %v", err)
+		}
 		for ts := range s.heartbeatTicker.C {
 			s.heartbeat(ts)
 		}
@@ -139,16 +136,30 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 
 func (s *ServeCommand) initialize(ctx *kingpin.ParseContext) error {
 	s.logger = config.NewLogger(s.logLevel)
-	var err error
-	if s.config, err = config.LoadConfig(s); err != nil {
-		return err
-	}
+	config.ConfigInitialize(s)
 	return nil
 }
 
 func configureServeCommand(app *kingpin.Application) {
 	s := &ServeCommand{logLevel: 1}
 	serve := app.Command("serve", "Run the Signalilo service").Default().Action(s.run).PreAction(s.initialize)
-	serve.Flag("config-file", "Configuration file").Short('c').StringVar(&s.configFile)
-	serve.Flag("port", "Listening port for the Alertmanager webhook").Default("8888").Envar("PORT").Short('p').IntVar(&s.port)
+
+	// General configuration
+	serve.Flag("uuid", "Instance UUID").Envar("SIGNALILO_UUID").Required().StringVar(&s.config.UUID)
+	serve.Flag("loglevel", "Signalilo Loglevel").Envar("SIGNALILO_LOG_LEVEL").Default("2").IntVar(&s.config.LogLevel)
+
+	// Icinga2 client configuration
+	serve.Flag("icinga_hostname", "Icinga Servicehost Name").Envar("SIGNALILO_ICINGA_HOSTNAME").Required().StringVar(&s.config.HostName)
+	serve.Flag("icinga_url", "Icinga API URL").Envar("SIGNALILO_ICINGA_URL").Required().StringVar(&s.config.IcingaConfig.URL)
+	serve.Flag("icinga_username", "Icinga Username").Envar("SIGNALILO_ICINGA_USERNAME").Required().StringVar(&s.config.IcingaConfig.User)
+	serve.Flag("icinga_password", "Icinga Password").Envar("SIGNALILO_ICINGA_PASSWORD").Required().StringVar(&s.config.IcingaConfig.Password)
+	serve.Flag("icinga_insecure_tls", "Skip Icinga TLS verification").Envar("SIGNALILO_ICINGA_INSECURE_TLS").Default("false").BoolVar(&s.config.IcingaConfig.InsecureTLS)
+	serve.Flag("icinga_debug", "Enable debug-level logging for icinga2 client library").Envar("SIGNALILO_ICINGA_DEBUG").Default("false").BoolVar(&s.config.IcingaConfig.Debug)
+	serve.Flag("icinga_heartbeat_interval", "Heartbeat interval to Icinga").Envar("SIGNALILO_ICINGA_HEARTBEAT_INTERVAL").Default("1m").DurationVar(&s.config.HeartbeatInterval)
+	serve.Flag("icinga_gc_interval", "Garbage collection interval for old alerts").Envar("SIGNALILO_ICINGA_GC_INTERVAL").Default("15m").DurationVar(&s.config.GcInterval)
+	serve.Flag("icinga_keep_for", "How long to keep old alerts around after they've been resolved").Envar("SIGNALILO_ICINGA_KEEP_FOR").Default("168h").DurationVar(&s.config.KeepFor)
+
+	// Alert manager configuration
+	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)
+	serve.Flag("alertmanager_bearer_token", "Bearer token for incoming requests").Envar("SIGNALILO_ALERTMANAGER_BEARER_TOKEN").Required().StringVar(&s.config.AlertManagerConfig.BearerToken)
 }

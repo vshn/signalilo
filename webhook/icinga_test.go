@@ -54,7 +54,7 @@ func TestComputeServiceName(t *testing.T) {
 		},
 	}
 
-	c := config.NewMockConfiguration("./config.test.yaml", 1)
+	c := config.NewMockConfiguration(1)
 
 	for _, alert := range alerts {
 		svcName, err := computeServiceName(template.Data{}, alert, c)
