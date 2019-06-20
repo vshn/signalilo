@@ -158,6 +158,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_heartbeat_interval", "Heartbeat interval to Icinga").Envar("SIGNALILO_ICINGA_HEARTBEAT_INTERVAL").Default("1m").DurationVar(&s.config.HeartbeatInterval)
 	serve.Flag("icinga_gc_interval", "Garbage collection interval for old alerts").Envar("SIGNALILO_ICINGA_GC_INTERVAL").Default("15m").DurationVar(&s.config.GcInterval)
 	serve.Flag("icinga_keep_for", "How long to keep old alerts around after they've been resolved").Envar("SIGNALILO_ICINGA_KEEP_FOR").Default("168h").DurationVar(&s.config.KeepFor)
+	serve.Flag("icinga_ca", "A custom CA certificate to use when connecting to the Icinga API").Envar("SIGNALILO_ICINGA_CA").StringVar(&s.config.CAData)
 
 	// Alert manager configuration
 	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)
