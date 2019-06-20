@@ -86,11 +86,14 @@ func (s *ServeCommand) startHeartbeat() error {
 	hbInterval := s.GetConfig().HeartbeatInterval
 	s.heartbeatTicker = time.NewTicker(hbInterval)
 	s.logger.Infof("Starting heartbeat: interval %v", hbInterval)
-	err := s.heartbeat(time.Now())
-	if err != nil {
-		return fmt.Errorf("Unable to send initial heartbeat: %v", err)
-	}
+
 	go func() {
+		// Send initial heartbeat from goroutine to make server
+		// startup quicker
+		err := s.heartbeat(time.Now())
+		if err != nil {
+			s.logger.Errorf("Unable to send initial heartbeat: %v", err)
+		}
 		for ts := range s.heartbeatTicker.C {
 			s.heartbeat(ts)
 		}
