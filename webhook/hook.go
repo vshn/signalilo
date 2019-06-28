@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"git.vshn.net/appuio/signalilo/config"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
@@ -31,6 +32,22 @@ func asJSON(w http.ResponseWriter, status int, message string) {
 	fmt.Fprint(w, json)
 }
 
+func checkBearerToken(r *http.Request, c config.Configuration) error {
+	tokenHeader := r.Header.Get("Authorization")
+	if tokenHeader == "" {
+		return fmt.Errorf("Request does not have Authorization header")
+	}
+	headerElems := strings.Split(tokenHeader, " ")
+	if len(headerElems) != 2 || (len(headerElems) > 0 && headerElems[0] != "Bearer") {
+		return fmt.Errorf("Malformed Authorization header")
+	}
+	token := headerElems[1]
+	if token != c.GetConfig().AlertManagerConfig.BearerToken {
+		return fmt.Errorf("Invalid Bearer token")
+	}
+	return nil
+}
+
 // Webhook handles incoming webhook HTTP requests
 func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	defer r.Body.Close()
@@ -39,6 +56,13 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	if l == nil {
 		panic("logger is nil")
 	}
+
+	if err := checkBearerToken(r, c); err != nil {
+		l.Errorf("Checking webhook authentication: %v", err)
+		asJSON(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	icinga := c.GetIcingaClient()
 	if icinga == nil {
 		panic("icinga client is nil")
