@@ -33,6 +33,9 @@ type Configuration interface {
 
 type alertManagerConfig struct {
 	BearerToken string
+	TLSCertPath string
+	TLSKeyPath  string
+	UseTLS      bool
 }
 
 type SignaliloConfig struct {
@@ -61,6 +64,10 @@ func ConfigInitialize(configuration Configuration) {
 		l.Errorf("Unable to create new icinga client: %s", err)
 	} else {
 		configuration.SetIcingaClient(icinga)
+	}
+	// finalize TLS config
+	if config.AlertManagerConfig.TLSCertPath != "" && config.AlertManagerConfig.TLSKeyPath != "" {
+		config.AlertManagerConfig.UseTLS = true
 	}
 }
 
