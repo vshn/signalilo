@@ -51,6 +51,14 @@ build:dev:
   only:
     - dev
 
+build:mr:
+  stage: build
+  variables:
+    IMAGE_TAG: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME
+  <<: *dockerbuild
+  only:
+    - merge_requests
+
 build:latest:
   stage: build
   variables:

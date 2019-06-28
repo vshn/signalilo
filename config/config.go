@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/x509"
+	"fmt"
 	"os"
 	"time"
 
@@ -12,11 +14,11 @@ import (
 )
 
 type icingaConfig struct {
-	URL         string `mapstructure:"url"`
-	User        string `mapstructure:"username"`
-	Password    string `mapstructure:"password"`
-	InsecureTLS bool   `mapstructure:"insecure_tls"`
-	Debug       bool   `mapstructure:"debug"`
+	URL         string
+	User        string
+	Password    string
+	InsecureTLS bool
+	Debug       bool
 }
 
 type Configuration interface {
@@ -30,18 +32,19 @@ type Configuration interface {
 }
 
 type alertManagerConfig struct {
-	BearerToken string `mapstructure:"bearer_token"`
+	BearerToken string
 }
 
 type SignaliloConfig struct {
-	UUID               string             `mapstructure:"uuid"`
-	HostName           string             `mapstructure:"host_name"`
-	IcingaConfig       icingaConfig       `mapstructure:"icinga_api"`
-	GcInterval         time.Duration      `mapstructure:"gc_interval"`
-	AlertManagerConfig alertManagerConfig `mapstructure:"alertmanager"`
-	HeartbeatInterval  time.Duration      `mapstructure:"heartbeat_interval"`
-	LogLevel           int                `mapstructure:"log_level"`
-	KeepFor            time.Duration      `mapstructure:"keep_for"`
+	UUID               string
+	HostName           string
+	IcingaConfig       icingaConfig
+	GcInterval         time.Duration
+	AlertManagerConfig alertManagerConfig
+	HeartbeatInterval  time.Duration
+	LogLevel           int
+	KeepFor            time.Duration
+	CAData             string
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -49,8 +52,11 @@ func ConfigInitialize(configuration Configuration) {
 	config := configuration.GetConfig()
 
 	// do first init of Logger and IcingaClient
+	l.Infof("Configuring logger with LogLevel=%v", config.LogLevel)
 	configuration.SetLogger(NewLogger(config.LogLevel))
-	icinga, err := newIcingaClient(config)
+	// Refresh local reference to logger after setup
+	l = configuration.GetLogger()
+	icinga, err := newIcingaClient(config, l)
 	if err != nil {
 		l.Errorf("Unable to create new icinga client: %s", err)
 	} else {
@@ -58,13 +64,31 @@ func ConfigInitialize(configuration Configuration) {
 	}
 }
 
-func newIcingaClient(c *SignaliloConfig) (icinga2.Client, error) {
+func makeCertPool(c *SignaliloConfig, l logr.Logger) (*x509.CertPool, error) {
+	rootCAs := x509.NewCertPool()
+	if ok := rootCAs.AppendCertsFromPEM([]byte(c.CAData)); !ok {
+		return nil, fmt.Errorf("No certs appended")
+	}
+	return rootCAs, nil
+}
+
+func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) {
+
+	rootCAs, err := x509.SystemCertPool()
+	if c.CAData != "" {
+		rootCAs, err = makeCertPool(c, l)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	client, err := icinga2.New(icinga2.WebClient{
 		URL:         c.IcingaConfig.URL,
 		Username:    c.IcingaConfig.User,
 		Password:    c.IcingaConfig.Password,
 		Debug:       c.IcingaConfig.Debug,
-		InsecureTLS: c.IcingaConfig.InsecureTLS})
+		InsecureTLS: c.IcingaConfig.InsecureTLS,
+		RootCAs:     rootCAs})
 	if err != nil {
 		return nil, err
 	}
@@ -131,12 +155,13 @@ func NewMockConfiguration(verbosity int) Configuration {
 		HeartbeatInterval: 1 * time.Minute,
 		LogLevel:          2,
 		KeepFor:           5 * time.Minute,
+		CAData:            "",
 	}
 	mockCfg := MockConfiguration{
 		config: signaliloCfg,
 	}
-	ConfigInitialize(mockCfg)
 	mockCfg.logger = MockLogger(mockCfg.config.LogLevel)
+	ConfigInitialize(mockCfg)
 	// TODO: set mockCfg.icingaClient as mocked IcingaClient
 	return mockCfg
 }
