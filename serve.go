@@ -131,7 +131,13 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 
 	listenAddress := fmt.Sprintf(":%d", s.port)
 	s.logger.Infof("listening on: %v", listenAddress)
-	return http.ListenAndServe(listenAddress, nil)
+	alertManagerConfig := s.config.AlertManagerConfig
+	if alertManagerConfig.UseTLS {
+		s.logger.Infof("Using TLS: certificate=%v, key=%v", alertManagerConfig.TLSCertPath, alertManagerConfig.TLSKeyPath)
+		return http.ListenAndServeTLS(listenAddress, alertManagerConfig.TLSCertPath, alertManagerConfig.TLSKeyPath, nil)
+	} else {
+		return http.ListenAndServe(listenAddress, nil)
+	}
 }
 
 func (s *ServeCommand) initialize(ctx *kingpin.ParseContext) error {
@@ -163,4 +169,6 @@ func configureServeCommand(app *kingpin.Application) {
 	// Alert manager configuration
 	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)
 	serve.Flag("alertmanager_bearer_token", "Bearer token for incoming requests").Envar("SIGNALILO_ALERTMANAGER_BEARER_TOKEN").Required().StringVar(&s.config.AlertManagerConfig.BearerToken)
+	serve.Flag("alertmanager_tls_cert", "Path of certificate file for TLS-enabled webhook endpoint. Should contain the full chain").Envar("SIGNALILO_ALERTMANAGER_TLS_CERT").StringVar(&s.config.AlertManagerConfig.TLSCertPath)
+	serve.Flag("alertmanager_tls_key", "Path of key file for TLS-enabled webhook endpoint").Envar("SIGNALILO_ALERTMANAGER_TLS_KEY").StringVar(&s.config.AlertManagerConfig.TLSKeyPath)
 }
