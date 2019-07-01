@@ -3,7 +3,8 @@ services:
   - docker:dind
 
 variables:
-  REGISTRY: registry.vshn.net
+  REGISTRY_PATH: docker.io/vshn
+  DOCKER_HUB_PATH: docker.io/vshn
   KUBECONFIG: /tmp/kube
   OC_VERSION: v3.9
   OPENSHIFT_PROJECT: vshn-signalilo-prod
@@ -13,13 +14,25 @@ variables:
 .dockerbuild: &dockerbuild
   before_script:
     - docker info
-    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $REGISTRY
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
   script:
-    - docker pull ${REGISTRY}/${CI_PROJECT_PATH}:builder || true
-    - docker build --target builder --cache-from ${REGISTRY}/${CI_PROJECT_PATH}:builder --tag ${REGISTRY}/${CI_PROJECT_PATH}:builder .
-    - docker build --cache-from ${REGISTRY}/${CI_PROJECT_PATH}:builder --tag ${REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG} .
-    - docker push ${REGISTRY}/${CI_PROJECT_PATH}:builder
-    - docker push ${REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG}
+    - docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:builder || true
+    - docker build --target builder --cache-from ${CI_REGISTRY}/${CI_PROJECT_PATH}:builder --tag ${CI_REGISTRY}/${CI_PROJECT_PATH}:builder .
+    - docker build --cache-from ${CI_REGISTRY}/${CI_PROJECT_PATH}:builder --tag ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG} .
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:builder
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG}
+  tags:
+    - dockerbuild
+
+.dockerhubpush: &dockerhubpush
+  before_script:
+    - docker info
+    - echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin $CI_REGISTRY
+    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+  script:
+    - docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG}
+    - docker tag ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG} ${REGISTRY_PATH}/signalilo:${IMAGE_TAG}
+    - docker push ${REGISTRY_PATH}/signalilo:${IMAGE_TAG}
   tags:
     - dockerbuild
 
@@ -72,6 +85,14 @@ build:tag:
   variables:
     IMAGE_TAG: ${CI_COMMIT_TAG}
   <<: *dockerbuild
+  only:
+    - tags
+
+push:tag:
+  stage: deploy
+  variables:
+    IMAGE_TAG: ${CI_COMMIT_TAG}
+  <<: *dockerhubpush
   only:
     - tags
 
