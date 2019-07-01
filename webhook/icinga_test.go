@@ -1,3 +1,12 @@
+/*
+ * Authors:
+ * Simon Gerber <simon.gerber@vshn.ch>
+ *
+ * License:
+ * Copyright (c) 2019, VSHN AG, <info@vshn.ch>
+ * Licensed under "BSD 3-Clause". See LICENSE file.
+ */
+
 package webhook
 
 import (
