@@ -33,6 +33,9 @@ variables:
     - docker pull ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG}
     - docker tag ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG} ${REGISTRY_PATH}/signalilo:${IMAGE_TAG}
     - docker push ${REGISTRY_PATH}/signalilo:${IMAGE_TAG}
+    # Also tag image we're pushing to dockerhub as latest
+    - docker tag ${CI_REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG} ${REGISTRY_PATH}/signalilo:latest
+    - docker push ${REGISTRY_PATH}/signalilo:latest
   tags:
     - dockerbuild
 
