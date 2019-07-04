@@ -36,24 +36,6 @@ variables:
   tags:
     - dockerbuild
 
-.openshift: &openshift
-  image: docker.io/appuio/oc:$OC_VERSION
-  before_script:
-    - oc login $OPENSHIFT_URL --token=$OPENSHIFT_TOKEN
-  script:
-    - oc -n $OPENSHIFT_PROJECT process -f deploy/openshift-template.yaml --local
-        -p APP_IMAGE=${REGISTRY}/${CI_PROJECT_PATH}:${IMAGE_TAG}
-        -p APP_STAGE=$APP_STAGE
-        -p CI_ENVIRONMENT_SLUG=$CI_ENVIRONMENT_SLUG
-        -p CI_PROJECT_PATH_SLUG=$CI_PROJECT_PATH_SLUG
-        -p CI_COMMIT_SHA=$CI_COMMIT_SHA
-        -p OPENSHIFT_PROJECT=$OPENSHIFT_PROJECT
-        -p TLS_ACME=$TLS_ACME
-        -p URL=$URL
-        | oc -n $OPENSHIFT_PROJECT apply --overwrite -f -
-  tags:
-    - dockerbuild
-
 build:dev:
   stage: build
   variables:
@@ -95,44 +77,3 @@ push:tag:
   <<: *dockerhubpush
   only:
     - tags
-
-deploy:dev:
-  <<: *openshift
-  stage: deploy
-  variables:
-    APP_STAGE: dev
-    IMAGE_TAG: dev
-    TLS_ACME: "false"
-    URL: vshn-signalilo-dev.appuioapp.ch
-  environment:
-    name: review/dev
-    url: https://${URL}/
-    on_stop: deploy:stop
-  only:
-    - dev
-
-deploy:production:
-  <<: *openshift
-  stage: deploy
-  when: manual
-  variables:
-    APP_STAGE: prod
-    IMAGE_TAG: $CI_COMMIT_TAG
-    TLS_ACME: "true"
-    URL: signalilo.vshn.net
-  environment:
-    name: production
-  only:
-    - tags
-
-deploy:stop:
-  <<: *openshift
-  stage: deploy
-  when: manual
-  variables:
-    GIT_STRATEGY: none
-  environment:
-    name: review/dev
-    action: stop
-  script:
-    - oc -n $OPENSHIFT_PROJECT delete all -l app="$CI_ENVIRONMENT_SLUG"
