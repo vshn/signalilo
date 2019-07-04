@@ -1,3 +1,12 @@
+/*
+ * Authors:
+ * Simon Gerber <simon.gerber@vshn.ch>
+ *
+ * License:
+ * Copyright (c) 2019, VSHN AG, <info@vshn.ch>
+ * Licensed under "BSD 3-Clause". See LICENSE file.
+ */
+
 package main
 
 import (
@@ -170,5 +179,5 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)
 	serve.Flag("alertmanager_bearer_token", "Bearer token for incoming requests").Envar("SIGNALILO_ALERTMANAGER_BEARER_TOKEN").Required().StringVar(&s.config.AlertManagerConfig.BearerToken)
 	serve.Flag("alertmanager_tls_cert", "Path of certificate file for TLS-enabled webhook endpoint. Should contain the full chain").Envar("SIGNALILO_ALERTMANAGER_TLS_CERT").StringVar(&s.config.AlertManagerConfig.TLSCertPath)
-	serve.Flag("alertmanager_tls_key", "Path of key file for TLS-enabled webhook endpoint").Envar("SIGNALILO_ALERTMANAGER_TLS_KEY").StringVar(&s.config.AlertManagerConfig.TLSKeyPath)
+	serve.Flag("alertmanager_tls_key", "Path of private key file for TLS-enabled webhook endpoint").Envar("SIGNALILO_ALERTMANAGER_TLS_KEY").StringVar(&s.config.AlertManagerConfig.TLSKeyPath)
 }
