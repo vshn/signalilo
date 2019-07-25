@@ -7,12 +7,12 @@ those webhooks to Icinga2 using https://github.com/vshn/go-icinga2-client.
 ## Usage
 
 Signalilo gets started from the command line and takes its configuration
-eighter as options or as environment variables. Use `signalilo --help` to get a
+either as options or as environment variables. Use `signalilo --help` to get a
 list of all available configuration parameters.
 
 When started, Signalilo listens to HTTP requests on the following paths:
 
-* `/webhook` Endpoint to accepts alerts from Alertmanager.
+* `/webhook` Endpoint to accept alerts from Alertmanager.
 * `/healthz` returns HTTP 200 with `ok` as its payload as long as the webhook
   serving loop is operational.
 
@@ -80,8 +80,8 @@ Optional
 ## Integration to Prometheus/Alertmanager.
 
 The `/webhook` accepts alerts in the [format of Alertmanager][webhook_format].
-The following Alertmanager is an example taken from a Signalilo installation on
-OpenShift.
+The following Alertmanager configuration is an example taken from a Signalilo
+installation on OpenShift.
 
     global:
       resolve_timeout: 5m
@@ -114,7 +114,7 @@ Required labels:
 Required annotations:
 
 * `summary` mapped to `display_name`.
-* `description`: mapped to `notes.
+* `description`: mapped to `notes`.
 * `message`: mapped to `plugin_output`.
 
 ## Integration with Icinga
@@ -131,12 +131,12 @@ All state needed for doing garbage collection is stored in Icinga service variab
 
 ### Heartbeat
 
-On startup of the app the app checks if the matching heartbeat service is
-available in Icinga, otherwise fail and exit with a fatal error. On a regular
-interval the app posts it's state there. If no state update was provided,
-Icinga automatically marks the check as UNKNOWN.  See [Icinga2 passive
-checks][passive_checks] for a description of how the service object needs to be
-configured.
+On startup, Signalilo checks if the matching heartbeat service is available in
+Icinga, otherwise it exits with a fatal error. During operation, Signalilo
+regularly posts its state to the heartbeat service.  If no state update was
+provided, Icinga automatically marks the check as UNKNOWN.  See [Icinga2
+passive checks][passive_checks] for a description of how the service object
+needs to be configured.
 
 [passive_checks]: https://wiki.vshn.net/display/VT/Icinga2+passive+checks
 [webhook_format]: https://prometheus.io/docs/alerting/configuration/#webhook_config.
