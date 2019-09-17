@@ -103,10 +103,11 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	}
 
 	for _, alert := range data.Alerts {
-		l.V(2).Infof("Alert: alertname=%v", alert.Labels["alertname"])
-
-		l.V(2).Infof("Alert: severity=%v", alert.Labels["severity"])
-		l.V(2).Infof("Alert: message=%v", alert.Annotations["message"])
+		l.V(2).Infof("Processing %v alert: alertname=%v, severity=%v, message=%v",
+			alert.Status,
+			alert.Labels["alertname"],
+			alert.Labels["severity"],
+			alert.Annotations["message"])
 
 		// Compute service and display name for alert
 		serviceName, err := computeServiceName(data, alert, c)
@@ -128,8 +129,12 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		if svc.Name == "" {
 			continue
 		}
+
+		exitStatus := severityToExitStatus(alert.Status, alert.Labels["severity"])
+		l.V(2).Infof("Executing ProcessCheckResult on icinga2 for %v: exit status %v",
+			serviceName, exitStatus)
 		err = icinga.ProcessCheckResult(svc, icinga2.Action{
-			ExitStatus:   severityToExitStatus(alert.Status, alert.Labels["severity"]),
+			ExitStatus:   exitStatus,
 			PluginOutput: alert.Annotations["message"],
 		})
 		if err != nil {
