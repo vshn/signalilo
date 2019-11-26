@@ -123,12 +123,9 @@ func updateOrCreateService(icinga icinga2.Client,
 	// Set defaults
 	serviceVars["bridge_uuid"] = config.UUID
 	serviceVars["keep_for"] = config.KeepFor
-	for k, v := range alert.Labels {
-		serviceVars["label_"+k] = v
-	}
-	for k, v := range alert.Annotations {
-		serviceVars["annotation_"+k] = v
-	}
+	serviceVars = mapIcingaVariables(serviceVars, alert.Labels, "label_", c.GetLogger())
+	serviceVars = mapIcingaVariables(serviceVars, alert.Annotations, "annotation_", c.GetLogger())
+
 	// Create service attrs object
 	serviceData := icinga2.Service{
 		Name:               serviceName,
