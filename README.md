@@ -140,3 +140,26 @@ needs to be configured.
 
 [passive_checks]: https://wiki.vshn.net/display/VT/Icinga2+passive+checks
 [webhook_format]: https://prometheus.io/docs/alerting/configuration/#webhook_config.
+
+### Custom Variables
+
+All labels and annotations will be mapped to custom variables. Keys of Labels
+will be prefixed with `label_` and keys of annotations with `annotation_`.
+
+If the key an annotation or label starts with `icinga_` it will also be added
+as custom variable but without any prefix. Since all labels and annotations
+will be strings, a type information needs to be provided so that a conversion
+can be done accordingly. This is done by adding the type as part of the prefix
+(`icinga_<type>_`).  Current supported types are `number` and `string`.
+
+Examples:
+
+* `foo` -> `label_foo` or an `anotation_foo`.
+* `icinga_foo_string` -> label/annotation named `foo` with value is passed
+  as is.
+* `icinga_bar_number` -> label/annotation named `bar` with its value is
+  converted to an integer number.
+
+In case there is a label and an annotation with the `icinga_<type>` prefix, the
+value of the annotation will take precedence in the resulting set of custom
+variables.
