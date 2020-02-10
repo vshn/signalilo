@@ -1,6 +1,7 @@
 package webhook
 
 import (
+	"sort"
 	"strings"
 	"testing"
 
@@ -53,10 +54,13 @@ func TestMapIcingaVariables(t *testing.T) {
 		"b":                    42,
 		"c":                    "c",
 	}, vars)
-	errs := []string{
+	expected_errs := []string{
 		"INFO Failed to map Icinga variable 'icinga_unknown_d': unknown type",
 		"INFO Failed to map Icinga variable 'icinga_number_e': strconv.Atoi: parsing \"e\": invalid syntax",
-		"",
 	}
-	assert.Equal(t, strings.Join(errs, "\n"), l.Buf().String())
+	sort.Strings(expected_errs)
+	actual_errs := strings.Split(strings.TrimSpace(l.Buf().String()), "\n")
+	sort.Strings(actual_errs)
+
+	assert.Equal(t, strings.Join(expected_errs, "\n"), strings.Join(actual_errs, "\n"))
 }
