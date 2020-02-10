@@ -30,7 +30,7 @@ Docker
 
 OpenShift
 
-See https://git.vshn.net/appuio/mungg-cluster-monitoring.
+The Helm chart should work on OpenShift
 
 ## Configuration
 
