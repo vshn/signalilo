@@ -29,7 +29,7 @@ RUN CGO_ENABLED=0 \
     go build -a -installsuffix cgo -ldflags="-w -s" -o /go/bin/signalilo
 
 # Run tests
-RUN CGO_ENABLED=0 go test
+RUN CGO_ENABLED=0 go test -v ./...
 
 ############################
 # STEP 2 build runtime image
