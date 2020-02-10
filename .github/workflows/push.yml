@@ -29,3 +29,4 @@ jobs:
         name: "${{ env.IMAGE }}:${{ env.VERSION }}"
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+        buildargs: VERSION
