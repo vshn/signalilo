@@ -6,7 +6,7 @@ require (
 	github.com/corvus-ch/logr v0.0.0-20180917163152-45217966b77e
 	github.com/prometheus/alertmanager v0.16.1
 	github.com/sirupsen/logrus v1.4.2
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
