@@ -19,12 +19,12 @@ all: test build
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -v \
 		-o $(BINARY_NAME) \
-		-ldflags "-X main.Version=$(VERSION)"
+		-ldflags "-w -s -X main.Version=$(VERSION) -X 'main.BuildDate=$(shell date -Iseconds)'"
 	@echo built '$(VERSION)'
 
 .PHONY: test
 test:
-	$(GOTEST) -v ./...
+	$(GOTEST) -v -cover ./...
 
 .PHONY: clean
 clean:
@@ -34,5 +34,5 @@ clean:
 
 .PHONY: docker
 docker:
-	docker build -t $(IMAGE_NAME) .
+	docker build --build-arg VERSION=$(VERSION) -t $(IMAGE_NAME) .
 	@echo built image $(IMAGE_NAME)

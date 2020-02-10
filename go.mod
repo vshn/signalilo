@@ -13,3 +13,5 @@ require (
 )
 
 replace github.com/Nexinto/go-icinga2-client => github.com/vshn/go-icinga2-client v0.0.4
+
+go 1.13
