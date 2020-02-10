@@ -171,6 +171,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_insecure_tls", "Skip Icinga TLS verification").Envar("SIGNALILO_ICINGA_INSECURE_TLS").Default("false").BoolVar(&s.config.IcingaConfig.InsecureTLS)
 	serve.Flag("icinga_debug", "Enable debug-level logging for icinga2 client library").Envar("SIGNALILO_ICINGA_DEBUG").Default("false").BoolVar(&s.config.IcingaConfig.Debug)
 	serve.Flag("icinga_heartbeat_interval", "Heartbeat interval to Icinga").Envar("SIGNALILO_ICINGA_HEARTBEAT_INTERVAL").Default("1m").DurationVar(&s.config.HeartbeatInterval)
+	serve.Flag("icinga_service_heartbeat_interval", "Heartbeat interval for services").Envar("SIGNALILO_ICINGA_SERVICES_HEARTBEAT_INTERVAL").Default("5m").DurationVar(&s.config.HeartbeatInterval)
 	serve.Flag("icinga_gc_interval", "Garbage collection interval for old alerts").Envar("SIGNALILO_ICINGA_GC_INTERVAL").Default("15m").DurationVar(&s.config.GcInterval)
 	serve.Flag("icinga_keep_for", "How long to keep old alerts around after they've been resolved").Envar("SIGNALILO_ICINGA_KEEP_FOR").Default("168h").DurationVar(&s.config.KeepFor)
 	serve.Flag("icinga_ca", "A custom CA certificate to use when connecting to the Icinga API").Envar("SIGNALILO_ICINGA_CA").StringVar(&s.config.CAData)

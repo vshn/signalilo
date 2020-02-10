@@ -54,6 +54,7 @@ type SignaliloConfig struct {
 	GcInterval         time.Duration
 	AlertManagerConfig alertManagerConfig
 	HeartbeatInterval  time.Duration
+	ServiceHeartbeatInterval time.Duration
 	LogLevel           int
 	KeepFor            time.Duration
 	CAData             string
