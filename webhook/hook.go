@@ -43,16 +43,21 @@ func asJSON(w http.ResponseWriter, status int, message string) {
 
 func checkBearerToken(r *http.Request, c config.Configuration) error {
 	tokenHeader := r.Header.Get("Authorization")
-	if tokenHeader == "" {
-		return fmt.Errorf("Request does not have Authorization header")
+	tokenQuery := r.URL.Query().Get("token")
+	var token string
+	if tokenHeader != "" {
+		headerElems := strings.Split(tokenHeader, " ")
+		if len(headerElems) != 2 || (len(headerElems) > 0 && headerElems[0] != "Bearer") {
+			return fmt.Errorf("Malformed authorization header")
+		}
+		token = headerElems[1]
+	} else if tokenQuery != "" {
+		token = tokenQuery
+	} else {
+		return fmt.Errorf("Request dos not contain an authorization token")
 	}
-	headerElems := strings.Split(tokenHeader, " ")
-	if len(headerElems) != 2 || (len(headerElems) > 0 && headerElems[0] != "Bearer") {
-		return fmt.Errorf("Malformed Authorization header")
-	}
-	token := headerElems[1]
 	if token != c.GetConfig().AlertManagerConfig.BearerToken {
-		return fmt.Errorf("Invalid Bearer token")
+		return fmt.Errorf("Invalid bearer token")
 	}
 	return nil
 }

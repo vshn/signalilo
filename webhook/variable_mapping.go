@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	ErrorNotAMappingKey = errors.New("key does meet the mappable pattern")
+	ErrorNotAMappingKey     = errors.New("key does meet the mappable pattern")
 	ErrorUnknownMappingType = errors.New("unknown type")
-	MappingKeyPattern = regexp.MustCompile("^icinga_([a-z]+)_(.*)$")
+	MappingKeyPattern       = regexp.MustCompile("^icinga_([a-z]+)_(.*)$")
 )
 
 func mapIcingaVariables(vars icinga2.Vars, kv map[string]string, prefix string, log logr.Logger) icinga2.Vars {
