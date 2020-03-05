@@ -16,7 +16,7 @@ import (
 
 	"git.vshn.net/appuio/signalilo/config"
 	"github.com/prometheus/alertmanager/template"
-	tassert "github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateServiceName(t *testing.T) {
@@ -41,16 +41,12 @@ func TestValidateServiceName(t *testing.T) {
 		"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab": false,
 	}
 
-	assert := tassert.New(t)
-
 	for name, expected := range serviceNames {
-		assert.Equal(validateServiceName(name), expected, "service name regex works")
+		assert.Equal(t, validateServiceName(name), expected, "service name regex works")
 	}
 }
 
 func TestComputeServiceName(t *testing.T) {
-	assert := tassert.New(t)
-
 	alerts := []template.Alert{
 		template.Alert{
 			Labels: map[string]string{
@@ -68,6 +64,6 @@ func TestComputeServiceName(t *testing.T) {
 	for _, alert := range alerts {
 		svcName, err := computeServiceName(template.Data{}, alert, c)
 		expected, _ := strconv.ParseBool(alert.Annotations["expected"])
-		assert.Equal(err == nil, expected, fmt.Sprintf("Alert: %+v -> %v; err = %v", alert, svcName, err))
+		assert.Equal(t, err == nil, expected, fmt.Sprintf("Alert: %+v -> %v; err = %v", alert, svcName, err))
 	}
 }

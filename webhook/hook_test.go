@@ -14,7 +14,8 @@ import (
 	"net/http"
 	"testing"
 
-	tassert "github.com/stretchr/testify/assert"
+	"git.vshn.net/appuio/signalilo/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func isJSON(s string) bool {
@@ -27,12 +28,32 @@ func mockEchoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestAsJSON(t *testing.T) {
-	assert := tassert.New(t)
-
 	handler := http.HandlerFunc(mockEchoHandler)
 
 	// verify response properties
-	assert.HTTPSuccess(handler, "GET", "http://example.com/webhook", nil)
-	response := tassert.HTTPBody(handler, "GET", "http://example.com/webhook", nil)
-	assert.JSONEq(response, `{ "Status": 200, "Message": "ok" }`)
+	assert.HTTPSuccess(t, handler, "GET", "http://example.com/webhook", nil)
+	response := assert.HTTPBody(handler, "GET", "http://example.com/webhook", nil)
+	assert.JSONEq(t, response, `{ "Status": 200, "Message": "ok" }`)
+}
+
+func TestBearerTokenHeader(t *testing.T) {
+	conf := config.NewMockConfiguration(1)
+	req, _ := http.NewRequest(http.MethodPost, "https://example.com/webhook", nil)
+	req.Header.Add("Authorization", "Bearer "+conf.GetConfig().AlertManagerConfig.BearerToken)
+	err := checkBearerToken(req, conf)
+	assert.NoError(t, err)
+}
+
+func TestBearerTokenQueryParam(t *testing.T) {
+	conf := config.NewMockConfiguration(1)
+	req, _ := http.NewRequest(http.MethodPost, "https://example.com/webhook?token="+conf.GetConfig().AlertManagerConfig.BearerToken, nil)
+	err := checkBearerToken(req, conf)
+	assert.NoError(t, err)
+}
+
+func TestBearerTokenMissing(t *testing.T) {
+	conf := config.NewMockConfiguration(1)
+	req, _ := http.NewRequest(http.MethodPost, "https://example.com/webhook", nil)
+	err := checkBearerToken(req, conf)
+	assert.Error(t, err)
 }

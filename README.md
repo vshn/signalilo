@@ -75,7 +75,7 @@ Optional
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:
   Port on which Signalilo listens to incoming webhooks (default 8888).
 * `--alertmanager_bearer_token`/`SIGNALILO_ALERTMANAGER_BEARER_TOKEN`:
-  Incoming webhook authentication.
+  Incoming webhook authentication. Can be either set via `Authorization` header or in the `token` URL query parameter.
 * `--alertmanager_tls_cert`/`SIGNALILO_ALERTMANAGER_TLS_CERT`:
   Path of certificate file for TLS-enabled webhook endpoint. Should contain the
   full chain.

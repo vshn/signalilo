@@ -5,6 +5,12 @@ Please document all notable changes to this project in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v0.4.0]
+
+### Added
+
+- Allow passing the bearer token via URL query parameter (`/webhook?token=<token>`) in addition to the `Authorization` header. Header takes precedence.
+
 ## [v0.3.0]
 
 ### Added
