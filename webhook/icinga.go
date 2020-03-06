@@ -126,54 +126,43 @@ func updateOrCreateService(icinga icinga2.Client,
 	serviceVars["keep_for"] = config.KeepFor
 	serviceVars = mapIcingaVariables(serviceVars, alert.Labels, "label_", c.GetLogger())
 	serviceVars = mapIcingaVariables(serviceVars, alert.Annotations, "annotation_", c.GetLogger())
-	var service_heartbeat = 0
-	var serviceData icinga2.Service
 
-	// Check if it's a service hearbeat (contains the 'heartbeat' label)
-	for k, v := range serviceVars {
-		if k == "label_heartbeat" {
-			service_heartbeat, _ = strconv.Atoi(v.(string))
-		}
+	// Create service attrs object
+	serviceData := icinga2.Service{
+		Name:               serviceName,
+		DisplayName:        displayName,
+		HostName:           hostname,
+		CheckCommand:       "dummy",
+		EnableActiveChecks: false,
+		Vars:               serviceVars,
+		Notes:              alert.Annotations["description"],
+		ActionURL:          alert.GeneratorURL,
+		NotesURL:           alert.Annotations["runbook_url"],
+		CheckInterval:      43200,
+		RetryInterval:      43200,
 	}
 
-	if service_heartbeat > 0 {
-		serviceVars["dummy_text"] = `
+	// Check if this is a heartbeat service. Adjust serviceData
+	// accordingly
+	if val, ok := alert.Labels["heartbeat"]; ok {
+		heartbeat_interval, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			return icinga2.Service{}, fmt.Errorf("Unable to parse heartbeat interval: %v", err)
+		}
+		serviceData.Vars["dummy_text"] = `
 		{{
 			var service = get_service(macro("$host.name$"), macro("$service.name$"))
 			var lastCheck = DateTime(service.last_check).to_string()
 
 			return "No check results received. Last result time: " + lastCheck
 		}}`
-		// Create service attrs object
-		serviceData = icinga2.Service{
-			Name:               serviceName,
-			DisplayName:        displayName,
-			HostName:           hostname,
-			CheckCommand:       "dummy",
-			EnableActiveChecks: true,
-			Vars:               serviceVars,
-			Notes:              alert.Annotations["description"],
-			ActionURL:          alert.GeneratorURL,
-			NotesURL:           alert.Annotations["runbook_url"],
-			CheckInterval:      float64(service_heartbeat) * 1.10, // Add 10%
-			RetryInterval:      43200,
-			State:              2, // Set the state to CRITICAL (2) if freshness checks fail.
-		}
-	} else {
-		// Create service attrs object
-		serviceData = icinga2.Service{
-			Name:               serviceName,
-			DisplayName:        displayName,
-			HostName:           hostname,
-			CheckCommand:       "dummy",
-			EnableActiveChecks: false,
-			Vars:               serviceVars,
-			Notes:              alert.Annotations["description"],
-			ActionURL:          alert.GeneratorURL,
-			NotesURL:           alert.Annotations["runbook_url"],
-			CheckInterval:      43200,
-			RetryInterval:      43200,
-		}
+		// add 10% onto requested check interval to allow some network
+		// latency for the check results
+		serviceData.CheckInterval = heartbeat_interval * 1.1
+		// Enable active checks for heartbeat check
+		serviceData.EnableActiveChecks = true
+		// Set exitStatus for missed heartbeat to Alert's severity
+		serviceData.State = float64(status)
 	}
 
 	icingaSvc, err := icinga.GetService(serviceData.FullName())
