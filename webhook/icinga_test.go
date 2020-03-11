@@ -122,6 +122,7 @@ func TestUpdateOrCreateService(t *testing.T) {
 		svc, err := updateOrCreateService(i, "test.vshn.net",
 			svcName, displayName, alert, c)
 		assert.Equal(t, err == nil, true, fmt.Sprintf("Alert: %+v -> %v; err = %v", alert, svc, err))
+		assert.Equal(t, svc.MaxCheckAttempts == 1, true, "soft states disabled for check %v", displayName)
 		isHeartbeat, _ := strconv.ParseBool(alert.Annotations["heartbeat"])
 		var state, check string
 		if isHeartbeat {

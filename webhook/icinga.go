@@ -140,6 +140,9 @@ func updateOrCreateService(icinga icinga2.Client,
 		NotesURL:           alert.Annotations["runbook_url"],
 		CheckInterval:      43200,
 		RetryInterval:      43200,
+		// We don't need soft states in Icinga, since the grace
+		// periods are already managed by Prometheus/Alertmanager
+		MaxCheckAttempts: 1,
 	}
 
 	// Check if this is a heartbeat service. Adjust serviceData
