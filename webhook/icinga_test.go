@@ -79,6 +79,7 @@ func TestUpdateOrCreateService(t *testing.T) {
 			},
 			Annotations: map[string]string{
 				"heartbeat": "false",
+				"message":   "the message 0",
 			},
 		},
 		template.Alert{
@@ -86,12 +87,14 @@ func TestUpdateOrCreateService(t *testing.T) {
 			Labels: map[string]string{
 				"alertname": "heartbeat",
 				"service":   "testing",
-				"heartbeat": "10",
+				"heartbeat": "60s",
 				"severity":  "critical",
 			},
 			Annotations: map[string]string{
 				"heartbeat":  "true",
 				"exitStatus": "2",
+				"interval":   "66",
+				"message":    "the message 1",
 			},
 		},
 		template.Alert{
@@ -99,19 +102,21 @@ func TestUpdateOrCreateService(t *testing.T) {
 			Labels: map[string]string{
 				"alertname": "heartbeat2",
 				"service":   "testing",
-				"heartbeat": "10",
+				"heartbeat": "5m",
 				"severity":  "warning",
 			},
 			Annotations: map[string]string{
 				"heartbeat":  "true",
 				"exitStatus": "1",
+				"interval":   "330",
+				"message":    "the message 2",
 			},
 		},
 	}
 	c := config.NewMockConfiguration(1)
 	i := icinga2.NewMockClient()
 
-	for _, alert := range alerts {
+	for idx, alert := range alerts {
 		svcName, err := computeServiceName(template.Data{}, alert, c)
 		displayName, err := computeDisplayName(template.Data{}, alert)
 		svc, err := updateOrCreateService(i, "test.vshn.net",
@@ -129,14 +134,19 @@ func TestUpdateOrCreateService(t *testing.T) {
 		assert.Equal(t, svc.EnableActiveChecks, isHeartbeat,
 			fmt.Sprintf("Active checking is %v on %v check %v", state, check, displayName))
 		if isHeartbeat {
-			checkInterval, _ := strconv.ParseFloat(alert.Labels["heartbeat"], 64)
-			assert.Equal(t, math.Abs(svc.CheckInterval-checkInterval*1.1) < 0.001,
+			checkInterval, _ := strconv.ParseFloat(alert.Annotations["interval"], 64)
+			assert.Equal(t, math.Abs(svc.CheckInterval-checkInterval) < 0.001,
 				isHeartbeat, "Check interval is correct on heartbeat check %v", displayName)
-			_, ok := svc.Vars["dummy_text"]
+			dummyText, ok := svc.Vars["dummy_text"]
 			assert.Equal(t, ok, true, "Dummy text is set on heartbeat check %v", displayName)
-			exitStatus, _ := strconv.ParseFloat(alert.Annotations["exitStatus"], 64)
-			assert.Equal(t, svc.State == exitStatus, true,
-				"ExitStatus of heartbeat is configured correctly for %v", displayName)
+			dummyState, ok := svc.Vars["dummy_state"]
+			assert.Equal(t, ok, true, "Dummy state is set on heartbeat check %v", displayName)
+			exitStatus, _ := strconv.Atoi(alert.Annotations["exitStatus"])
+			assert.Equal(t, dummyState == exitStatus, true,
+				"dummy_state of heartbeat is configured correctly for %v", displayName)
+			msg := fmt.Sprintf("the message %d", idx)
+			assert.Equal(t, dummyText == msg, true,
+				"dummy_text of heartbeat is configured correctly for %v", displayName)
 		} else {
 			assert.Equal(t, svc.CheckInterval == 43200, true)
 		}

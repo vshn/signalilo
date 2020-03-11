@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
+	"time"
 
 	"git.vshn.net/appuio/signalilo/config"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
@@ -145,24 +145,21 @@ func updateOrCreateService(icinga icinga2.Client,
 	// Check if this is a heartbeat service. Adjust serviceData
 	// accordingly
 	if val, ok := alert.Labels["heartbeat"]; ok {
-		heartbeat_interval, err := strconv.ParseFloat(val, 64)
+		heartbeat_interval, err := time.ParseDuration(val)
 		if err != nil {
 			return icinga2.Service{}, fmt.Errorf("Unable to parse heartbeat interval: %v", err)
 		}
-		serviceData.Vars["dummy_text"] = `
-		{{
-			var service = get_service(macro("$host.name$"), macro("$service.name$"))
-			var lastCheck = DateTime(service.last_check).to_string()
-
-			return "No check results received. Last result time: " + lastCheck
-		}}`
+		l.Infof("Creating alert as heartbeat with check interval %v", heartbeat_interval)
+		// Set dummy text to message annotation on alert
+		serviceData.Vars["dummy_text"] = alert.Annotations["message"]
+		// Set exitStatus for missed heartbeat to Alert's severity
+		serviceData.Vars["dummy_state"] = status
 		// add 10% onto requested check interval to allow some network
 		// latency for the check results
-		serviceData.CheckInterval = heartbeat_interval * 1.1
+		serviceData.CheckInterval = heartbeat_interval.Seconds() * 1.1
+		serviceData.RetryInterval = heartbeat_interval.Seconds() * 1.1
 		// Enable active checks for heartbeat check
 		serviceData.EnableActiveChecks = true
-		// Set exitStatus for missed heartbeat to Alert's severity
-		serviceData.State = float64(status)
 	}
 
 	icingaSvc, err := icinga.GetService(serviceData.FullName())
