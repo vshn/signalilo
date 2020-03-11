@@ -17,13 +17,30 @@ import (
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 )
 
+// extractDowntime searches the provided downtime array for a downtime for
+// service with name svcName.
+func extractDowntime(downtimes []icinga2.Downtime, svcName string) (icinga2.Downtime, bool) {
+	for _, dt := range downtimes {
+		if dt.Service == svcName {
+			return dt, true
+		}
+	}
+	return icinga2.Downtime{}, false
+}
+
 // collectService cleans up a single service that is managed by this Signalilo
-func collectService(svc icinga2.Service, c config.Configuration) error {
+func collectService(svc icinga2.Service, c config.Configuration, downtimes []icinga2.Downtime) error {
 	l := c.GetLogger()
 	icinga := c.GetIcingaClient()
 
-	if svc.State > 0 {
-		l.V(2).Infof(fmt.Sprintf("[Collect] Skipping service %v: state=%v", svc.Name, svc.State))
+	_, heartbeat := svc.Vars["label_heartbeat"]
+	_, downtimed := extractDowntime(downtimes, svc.Name)
+	if heartbeat && !downtimed {
+		l.V(2).Infof(fmt.Sprintf("[Collect] Skipping heartbeat %v: not downtimed", svc.Name))
+		return nil
+	} else if svc.State > 0 && !heartbeat {
+		l.V(2).Infof(fmt.Sprintf("[Collect] Skipping service %v: state=%v, downtimed=%v",
+			svc.Name, svc.State, downtimed))
 		return nil
 	}
 
@@ -58,13 +75,19 @@ func Collect(ts time.Time, c config.Configuration) error {
 		return err
 	}
 	l.V(2).Infof("[Collect] Found %v services with host = %v", len(services), hostname)
+	downtimes, err := icinga.ListDowntimes(fmt.Sprintf("host=%v", hostname))
+	if err != nil {
+		l.Errorf(fmt.Sprintf("[Collect] Error while listing downtimes: %v", err))
+		return err
+	}
+	l.V(2).Infof("[Collect] Found %v downtimes with host = %v", len(downtimes), hostname)
 	// Iterate through services, finding ones that are managed by this
 	// Signalilo and delete services which have transitioned to OK longer
 	// than keep_for ago
 	for _, svc := range services {
 		if svc.Vars["bridge_uuid"] == c.GetConfig().UUID {
 			l.Infof("[Collect] Found service %v with our bridge UUID", svc.Name)
-			err = collectService(svc, c)
+			err = collectService(svc, c, downtimes)
 			if err != nil {
 				l.Errorf(fmt.Sprintf("[Collect] Error garbage-collecting service: %v", err))
 			}
