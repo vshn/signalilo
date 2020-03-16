@@ -136,6 +136,10 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		}
 
 		exitStatus := severityToExitStatus(alert.Status, alert.Labels["severity"])
+		if svc.EnableActiveChecks {
+			// override exitStatus for sending heartbeat
+			exitStatus = 0
+		}
 		l.V(2).Infof("Executing ProcessCheckResult on icinga2 for %v: exit status %v",
 			serviceName, exitStatus)
 		err = icinga.ProcessCheckResult(svc, icinga2.Action{

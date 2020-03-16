@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"git.vshn.net/appuio/signalilo/config"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
@@ -139,6 +140,29 @@ func updateOrCreateService(icinga icinga2.Client,
 		NotesURL:           alert.Annotations["runbook_url"],
 		CheckInterval:      43200,
 		RetryInterval:      43200,
+		// We don't need soft states in Icinga, since the grace
+		// periods are already managed by Prometheus/Alertmanager
+		MaxCheckAttempts: 1,
+	}
+
+	// Check if this is a heartbeat service. Adjust serviceData
+	// accordingly
+	if val, ok := alert.Labels["heartbeat"]; ok {
+		heartbeat_interval, err := time.ParseDuration(val)
+		if err != nil {
+			return icinga2.Service{}, fmt.Errorf("Unable to parse heartbeat interval: %v", err)
+		}
+		l.Infof("Creating alert as heartbeat with check interval %v", heartbeat_interval)
+		// Set dummy text to message annotation on alert
+		serviceData.Vars["dummy_text"] = alert.Annotations["message"]
+		// Set exitStatus for missed heartbeat to Alert's severity
+		serviceData.Vars["dummy_state"] = status
+		// add 10% onto requested check interval to allow some network
+		// latency for the check results
+		serviceData.CheckInterval = heartbeat_interval.Seconds() * 1.1
+		serviceData.RetryInterval = heartbeat_interval.Seconds() * 1.1
+		// Enable active checks for heartbeat check
+		serviceData.EnableActiveChecks = true
 	}
 
 	icingaSvc, err := icinga.GetService(serviceData.FullName())
