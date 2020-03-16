@@ -5,6 +5,12 @@ Please document all notable changes to this project in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v0.5.0]
+
+### Added
+
+- Support for "heartbeat" services, i.e. services which alert when they don't receive a regular update.
+
 ## [v0.4.0]
 
 ### Added
@@ -43,3 +49,5 @@ Initial implementation
 [0.1.1]: https://github.com/vshn/signalilo/releases/tag/0.1.1
 [0.2.0]: https://github.com/vshn/signalilo/releases/tag/0.2.0
 [v0.3.0]: https://github.com/vshn/signalilo/releases/tag/v0.3.0
+[v0.4.0]: https://github.com/vshn/signalilo/releases/tag/v0.4.0
+[v0.5.0]: https://github.com/vshn/signalilo/releases/tag/v0.5.0
