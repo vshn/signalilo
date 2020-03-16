@@ -135,7 +135,7 @@ Service objects in Icinga will get garbage collected (aka deleted) on a regular 
 
 All state needed for doing garbage collection is stored in Icinga service variables.
 
-### Heartbeat
+### Signalilo Heartbeat
 
 On startup, Signalilo checks if the matching heartbeat service is available in
 Icinga, otherwise it exits with a fatal error. During operation, Signalilo
@@ -169,3 +169,22 @@ Examples:
 In case there is a label and an annotation with the `icinga_<type>` prefix, the
 value of the annotation will take precedence in the resulting set of custom
 variables.
+
+### Heartbeat Services
+
+Signalilo supports creating heartbeat services in Icinga. This can be used to
+map alerts like the `DeadMansSwitch` which comes with `prometheus-operator`
+and signals that the whole Prometheus stack is healthy.
+
+In order for Signalilo to treat an alert as a heartbeat, the alert must have
+a label `heartbeat`. Signalilo will try to parse the value of that label as a
+[Go duration].  
+
+If the value is parsed successfully, Signalilo will create a Icinga service
+check with active checks enabled and with the check interval set to the the
+parsed duration plus ten percent.  We add ten percent to the parsed duration
+to account for network latencies etc, which could otherwise lead to flapping
+heartbeat checks.
+
+
+[Go duration]: https://golang.org/pkg/time/#ParseDuration
