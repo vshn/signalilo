@@ -14,11 +14,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/bketelsen/logr"
+	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/vshn/signalilo/config"
 	"github.com/vshn/signalilo/gc"
 	"github.com/vshn/signalilo/webhook"
-	"github.com/Nexinto/go-icinga2-client/icinga2"
-	"github.com/bketelsen/logr"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 

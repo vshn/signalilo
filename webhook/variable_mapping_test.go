@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Nexinto/go-icinga2-client/icinga2"
+	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/corvus-ch/logr/buffered"
 	"github.com/stretchr/testify/assert"
 )

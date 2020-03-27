@@ -15,7 +15,7 @@ import (
 	"testing"
 
 	"github.com/vshn/signalilo/config"
-	"github.com/Nexinto/go-icinga2-client/icinga2"
+	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/prometheus/alertmanager/template"
 	"github.com/stretchr/testify/assert"
 )

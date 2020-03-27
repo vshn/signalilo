@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/vshn/signalilo/config"
-	"github.com/Nexinto/go-icinga2-client/icinga2"
+	"github.com/vshn/go-icinga2-client/icinga2"
 )
 
 // extractDowntime searches the provided downtime array for a downtime for
