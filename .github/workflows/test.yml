@@ -19,9 +19,10 @@ jobs:
         go: [ '1.14', '1.13', '1.12' ]
     name: Go get with Go ${{ matrix.go }}
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-go@v1
+    - uses: actions/setup-go@v2-beta
       with:
         go-version: ${{ matrix.go }}
-    - name: Go get Signalilo
-      run: go get github.com/vshn/signalilo
+    - run: go get -v github.com/vshn/signalilo@${{ github.head_ref }}
+      env:
+        GO111MODULE: on
+    - run: signalilo --version
