@@ -1,4 +1,4 @@
-module git.vshn.net/appuio/signalilo
+module github.com/vshn/signalilo
 
 require (
 	github.com/Nexinto/go-icinga2-client v0.0.0-20180829072643-d4f6001a2110
