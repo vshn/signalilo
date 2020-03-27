@@ -14,7 +14,7 @@ import (
 	"net/http"
 	"testing"
 
-	"git.vshn.net/appuio/signalilo/config"
+	"github.com/vshn/signalilo/config"
 	"github.com/stretchr/testify/assert"
 )
 

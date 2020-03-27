@@ -14,9 +14,9 @@ import (
 	"net/http"
 	"time"
 
-	"git.vshn.net/appuio/signalilo/config"
-	"git.vshn.net/appuio/signalilo/gc"
-	"git.vshn.net/appuio/signalilo/webhook"
+	"github.com/vshn/signalilo/config"
+	"github.com/vshn/signalilo/gc"
+	"github.com/vshn/signalilo/webhook"
 	"github.com/Nexinto/go-icinga2-client/icinga2"
 	"github.com/bketelsen/logr"
 	"gopkg.in/alecthomas/kingpin.v2"
