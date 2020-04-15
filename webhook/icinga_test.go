@@ -14,10 +14,10 @@ import (
 	"math"
 	"testing"
 
-	"github.com/vshn/signalilo/config"
-	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/prometheus/alertmanager/template"
 	"github.com/stretchr/testify/assert"
+	"github.com/vshn/go-icinga2-client/icinga2"
+	"github.com/vshn/signalilo/config"
 )
 
 type alertTestCase struct {
@@ -63,6 +63,22 @@ var (
 				Status: "firing",
 				Labels: map[string]string{
 					"alertname": "heartbeat2",
+					"service":   "testing",
+					"heartbeat": "5m",
+					"severity":  "warning",
+				},
+				Annotations: map[string]string{
+					"message": "the message 2",
+				},
+			}, true, true, 1, 330, "the message 2",
+		},
+	}
+	resolvedHeartbeatAlerts = map[string]alertTestCase{
+		"heartbeat resolved": {
+			template.Alert{
+				Status: "resolved",
+				Labels: map[string]string{
+					"alertname": "heartbeat3",
 					"service":   "testing",
 					"heartbeat": "5m",
 					"severity":  "warning",
@@ -166,6 +182,16 @@ func TestUpdateOrCreateHeartbeatService(t *testing.T) {
 			assert.Equal(t, ok, true, "Dummy state is set")
 			assert.Equal(t, dummyState == tcase.exitStatus, true, "dummy_state of heartbeat is correct")
 			assert.Equal(t, dummyText == tcase.message, true, "dummy_text of heartbeat is correct")
+		})
+	}
+	for name, tcase := range resolvedHeartbeatAlerts {
+		t.Run(name, func(t *testing.T) {
+			alert := tcase.alert
+			svcName, err := computeServiceName(template.Data{}, alert, c)
+			displayName, err := computeDisplayName(template.Data{}, alert)
+			svc, err := updateOrCreateService(i, "test.vshn.net", svcName, displayName, alert, c)
+			assert.Equal(t, err == nil, true, "service creation successful")
+			assert.Equal(t, svc.Name == "", true, "no service object created for resolved heartbeat")
 		})
 	}
 }

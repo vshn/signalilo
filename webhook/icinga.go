@@ -17,9 +17,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vshn/signalilo/config"
-	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/prometheus/alertmanager/template"
+	"github.com/vshn/go-icinga2-client/icinga2"
+	"github.com/vshn/signalilo/config"
 )
 
 // validateServiceName checks that computed service name matches constraints
@@ -105,19 +105,15 @@ func severityToExitStatus(status string, severity string) int {
 	return exitstatus
 }
 
-// updateOrCreateService updates or creates an Icinga2 service object from the
-// alert passed to the method
-func updateOrCreateService(icinga icinga2.Client,
-	hostname string,
+func createServiceData(hostname string,
 	serviceName string,
 	displayName string,
 	alert template.Alert,
-	c config.Configuration) (icinga2.Service, error) {
-
+	status int,
+	heartbeatInterval time.Duration,
+	c config.Configuration) icinga2.Service {
 	l := c.GetLogger()
 	config := c.GetConfig()
-
-	status := severityToExitStatus(alert.Status, alert.Labels["severity"])
 
 	// build Vars map
 	serviceVars := make(icinga2.Vars)
@@ -147,23 +143,51 @@ func updateOrCreateService(icinga icinga2.Client,
 
 	// Check if this is a heartbeat service. Adjust serviceData
 	// accordingly
-	if val, ok := alert.Labels["heartbeat"]; ok {
-		heartbeat_interval, err := time.ParseDuration(val)
-		if err != nil {
-			return icinga2.Service{}, fmt.Errorf("Unable to parse heartbeat interval: %v", err)
-		}
-		l.Infof("Creating alert as heartbeat with check interval %v", heartbeat_interval)
+	if heartbeatInterval.Seconds() > 0.0 {
+		l.Infof("Creating alert as heartbeat with check interval %v", heartbeatInterval)
 		// Set dummy text to message annotation on alert
 		serviceData.Vars["dummy_text"] = alert.Annotations["message"]
 		// Set exitStatus for missed heartbeat to Alert's severity
 		serviceData.Vars["dummy_state"] = status
 		// add 10% onto requested check interval to allow some network
 		// latency for the check results
-		serviceData.CheckInterval = heartbeat_interval.Seconds() * 1.1
-		serviceData.RetryInterval = heartbeat_interval.Seconds() * 1.1
+		serviceData.CheckInterval = heartbeatInterval.Seconds() * 1.1
+		serviceData.RetryInterval = heartbeatInterval.Seconds() * 1.1
 		// Enable active checks for heartbeat check
 		serviceData.EnableActiveChecks = true
 	}
+
+	return serviceData
+}
+
+// updateOrCreateService updates or creates an Icinga2 service object from the
+// alert passed to the method
+func updateOrCreateService(icinga icinga2.Client,
+	hostname string,
+	serviceName string,
+	displayName string,
+	alert template.Alert,
+	c config.Configuration) (icinga2.Service, error) {
+
+	l := c.GetLogger()
+
+	// Check if this alert is a heartbeat alert and extract interval if so
+	heartbeatInterval := time.Duration(0)
+	if val, ok := alert.Labels["heartbeat"]; ok {
+		if alert.Status == "resolved" {
+			l.Infof("Not processing resolved heartbeat for %v", serviceName)
+			return icinga2.Service{}, nil
+		}
+		interval, err := time.ParseDuration(val)
+		if err != nil {
+			return icinga2.Service{}, fmt.Errorf("Unable to parse heartbeat interval: %v", err)
+		}
+		heartbeatInterval = interval
+	}
+
+	status := severityToExitStatus(alert.Status, alert.Labels["severity"])
+
+	serviceData := createServiceData(hostname, serviceName, displayName, alert, status, heartbeatInterval, c)
 
 	icingaSvc, err := icinga.GetService(serviceData.FullName())
 	// update or create service, depending on whether object exists
