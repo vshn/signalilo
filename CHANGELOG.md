@@ -5,6 +5,14 @@ Please document all notable changes to this project in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [v0.6.0]
+
+### Fixed
+
+- Resolved "heartbeat" alerts are handled correctly, i.e. not at all ([#24])
+- The go module dependency definition doesn't use `replace` to pull in our fork of `go-icinga2-client` anymore. ([#21])
+- `go get` is now able to fetch and install Signalilo ([#19])
+
 ## [v0.5.0]
 
 ### Added
@@ -51,3 +59,7 @@ Initial implementation
 [v0.3.0]: https://github.com/vshn/signalilo/releases/tag/v0.3.0
 [v0.4.0]: https://github.com/vshn/signalilo/releases/tag/v0.4.0
 [v0.5.0]: https://github.com/vshn/signalilo/releases/tag/v0.5.0
+[v0.6.0]: https://github.com/vshn/signalilo/releases/tag/v0.6.0
+[#19]: https://github.com/vshn/signalilo/pull/19
+[#21]: https://github.com/vshn/signalilo/pull/21
+[#24]: https://github.com/vshn/signalilo/pull/24
