@@ -1,7 +1,8 @@
 # Project parameters
 BINARY_NAME ?= signalilo
 
-VERSION ?= $(shell git describe --tags --always --dirty --match=v* || (echo "command failed $$?"; exit 1))
+BINARY_VERSION = $(shell git describe --tags --always --dirty --match=v* || (echo "command failed $$?"; exit 1))
+VERSION ?= $(BINARY_VERSION)
 
 IMAGE_NAME ?= docker.io/vshn/$(BINARY_NAME):$(VERSION)
 

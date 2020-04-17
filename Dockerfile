@@ -10,7 +10,7 @@
 #####################
 FROM golang:1.14 as builder
 
-ARG VERSION
+ARG BINARY_VERSION
 
 # Workdir must be outside of GOPATH because of go mod usage
 WORKDIR /src/signalilo
