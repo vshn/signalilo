@@ -164,7 +164,7 @@ func NewMockConfiguration(verbosity int) Configuration {
 			User:              "sepp",
 			Password:          "sepp1",
 			InsecureTLS:       true,
-                        DisableKeepAlives: false,
+			DisableKeepAlives: false,
 			Debug:             false,
 		},
 		GcInterval: 1 * time.Minute,
