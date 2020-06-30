@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/bketelsen/logr"
+	"github.com/vshn/go-icinga2-client/icinga2"
 )
 
 var (

@@ -16,9 +16,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/vshn/signalilo/config"
-	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/prometheus/alertmanager/template"
+	"github.com/vshn/go-icinga2-client/icinga2"
+	"github.com/vshn/signalilo/config"
 )
 
 // responseJSON is used to marshal responses to incoming webhook requests to

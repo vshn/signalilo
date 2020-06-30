@@ -14,8 +14,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/vshn/signalilo/config"
 	"github.com/stretchr/testify/assert"
+	"github.com/vshn/signalilo/config"
 )
 
 func isJSON(s string) bool {
