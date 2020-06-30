@@ -25,4 +25,5 @@ jobs:
     - run: go get -v github.com/vshn/signalilo@${{ github.head_ref }}
       env:
         GO111MODULE: on
+        GOPROXY: direct
     - run: signalilo --version
