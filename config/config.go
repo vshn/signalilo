@@ -23,11 +23,12 @@ import (
 )
 
 type icingaConfig struct {
-	URL         string
-	User        string
-	Password    string
-	InsecureTLS bool
-	Debug       bool
+	URL               string
+	User              string
+	Password          string
+	InsecureTLS       bool
+	DisableKeepAlives bool
+	Debug             bool
 }
 
 type Configuration interface {
@@ -99,12 +100,13 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 	}
 
 	client, err := icinga2.New(icinga2.WebClient{
-		URL:         c.IcingaConfig.URL,
-		Username:    c.IcingaConfig.User,
-		Password:    c.IcingaConfig.Password,
-		Debug:       c.IcingaConfig.Debug,
-		InsecureTLS: c.IcingaConfig.InsecureTLS,
-		RootCAs:     rootCAs})
+		URL:               c.IcingaConfig.URL,
+		Username:          c.IcingaConfig.User,
+		Password:          c.IcingaConfig.Password,
+		Debug:             c.IcingaConfig.Debug,
+		InsecureTLS:       c.IcingaConfig.InsecureTLS,
+		DisableKeepAlives: c.IcingaConfig.DisableKeepAlives,
+		RootCAs:           rootCAs})
 	if err != nil {
 		return nil, err
 	}
@@ -158,11 +160,12 @@ func NewMockConfiguration(verbosity int) Configuration {
 		UUID:     "",
 		HostName: "signalilo_appuio_lab",
 		IcingaConfig: icingaConfig{
-			URL:         "localhost:5665",
-			User:        "sepp",
-			Password:    "sepp1",
-			InsecureTLS: true,
-			Debug:       false,
+			URL:               "localhost:5665",
+			User:              "sepp",
+			Password:          "sepp1",
+			InsecureTLS:       true,
+			DisableKeepAlives: false,
+			Debug:             false,
 		},
 		GcInterval: 1 * time.Minute,
 		AlertManagerConfig: alertManagerConfig{
