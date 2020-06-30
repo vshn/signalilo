@@ -6,7 +6,7 @@ require (
 	github.com/prometheus/alertmanager v0.21.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/stretchr/testify v1.6.1
-	github.com/vshn/go-icinga2-client v0.0.6
+	github.com/vshn/go-icinga2-client v0.0.7
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
