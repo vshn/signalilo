@@ -25,7 +25,6 @@ import (
 // ServeCommand holds all the configuration and objects necessary to serve the
 // Signalilo webhook
 type ServeCommand struct {
-	configFile      string
 	port            int
 	logLevel        int
 	config          config.SignaliloConfig

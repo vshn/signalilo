@@ -23,7 +23,6 @@ import (
 type alertTestCase struct {
 	alert       template.Alert
 	nameCompute bool
-	heartbeat   bool
 	exitStatus  int
 	interval    float64
 	message     string
@@ -40,7 +39,7 @@ var (
 				Annotations: map[string]string{
 					"message": "the message 0",
 				},
-			}, true, false, 0, 0, "the message 0",
+			}, true, 0, 0, "the message 0",
 		},
 	}
 	heartbeatAlerts = map[string]alertTestCase{
@@ -56,7 +55,7 @@ var (
 				Annotations: map[string]string{
 					"message": "the message 1",
 				},
-			}, true, true, 2, 66, "the message 1",
+			}, true, 2, 66, "the message 1",
 		},
 		"heartbeat warning": {
 			template.Alert{
@@ -70,7 +69,7 @@ var (
 				Annotations: map[string]string{
 					"message": "the message 2",
 				},
-			}, true, true, 1, 330, "the message 2",
+			}, true, 1, 330, "the message 2",
 		},
 	}
 	resolvedHeartbeatAlerts = map[string]alertTestCase{
@@ -86,7 +85,7 @@ var (
 				Annotations: map[string]string{
 					"message": "the message 2",
 				},
-			}, true, true, 1, 330, "the message 2",
+			}, true, 1, 330, "the message 2",
 		},
 	}
 	serviceNames = map[string]struct {

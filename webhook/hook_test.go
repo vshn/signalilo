@@ -10,18 +10,12 @@
 package webhook
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/vshn/signalilo/config"
 )
-
-func isJSON(s string) bool {
-	var js map[string]interface{}
-	return json.Unmarshal([]byte(s), &js) == nil
-}
 
 func mockEchoHandler(w http.ResponseWriter, r *http.Request) {
 	asJSON(w, http.StatusOK, "ok")
