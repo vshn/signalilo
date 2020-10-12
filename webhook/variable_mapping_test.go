@@ -64,3 +64,32 @@ func TestMapIcingaVariables(t *testing.T) {
 
 	assert.Equal(t, strings.Join(expected_errs, "\n"), strings.Join(actual_errs, "\n"))
 }
+
+func TestAddStaticVariables(t *testing.T) {
+	vars := make(icinga2.Vars)
+	l := buffered.New(0)
+	staticVars := map[string]string{
+		"a": "a",
+		"b": "b",
+	}
+	vars = addStaticIcingaVariables(vars, staticVars, l)
+	assert.Equal(t, icinga2.Vars{
+		"a": "a",
+		"b": "b",
+	}, vars)
+}
+
+func TestAddStaticVariablesNoOverwrite(t *testing.T) {
+	vars := make(icinga2.Vars)
+	vars["a"] = "z"
+	l := buffered.New(0)
+	staticVars := map[string]string{
+		"a": "a",
+		"b": "b",
+	}
+	vars = addStaticIcingaVariables(vars, staticVars, l)
+	assert.Equal(t, icinga2.Vars{
+		"a": "z",
+		"b": "b",
+	}, vars)
+}

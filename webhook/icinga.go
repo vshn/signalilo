@@ -122,6 +122,7 @@ func createServiceData(hostname string,
 	serviceVars["keep_for"] = config.KeepFor
 	serviceVars = mapIcingaVariables(serviceVars, alert.Labels, "label_", c.GetLogger())
 	serviceVars = mapIcingaVariables(serviceVars, alert.Annotations, "annotation_", c.GetLogger())
+	serviceVars = addStaticIcingaVariables(serviceVars, config.StaticServiceVars, l)
 
 	// Create service attrs object
 	serviceData := icinga2.Service{
