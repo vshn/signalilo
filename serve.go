@@ -103,7 +103,9 @@ func (s *ServeCommand) startHeartbeat() error {
 			s.logger.Errorf("Unable to send initial heartbeat: %v", err)
 		}
 		for ts := range s.heartbeatTicker.C {
-			s.heartbeat(ts)
+			if err := s.heartbeat(ts); err != nil {
+				s.logger.Errorf("sending heartbeat: %s", err)
+			}
 		}
 	}()
 	return nil
@@ -115,7 +117,9 @@ func (s *ServeCommand) startServiceGC() error {
 	s.logger.Infof("Starting service garbage collector: interval %v", gcInterval)
 	go func() {
 		for ts := range s.gcTicker.C {
-			gc.Collect(ts, s)
+			if err := gc.Collect(ts, s); err != nil {
+				s.logger.Error(err)
+			}
 		}
 	}()
 	return nil
