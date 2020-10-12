@@ -156,7 +156,11 @@ func (s *ServeCommand) initialize(ctx *kingpin.ParseContext) error {
 }
 
 func configureServeCommand(app *kingpin.Application) {
-	s := &ServeCommand{logLevel: 1}
+	s := &ServeCommand{logLevel: 1,
+		config: config.SignaliloConfig{
+			StaticServiceVars: map[string]string{},
+		},
+	}
 	serve := app.Command("serve", "Run the Signalilo service").Default().Action(s.run).PreAction(s.initialize)
 
 	// General configuration
@@ -175,6 +179,8 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_gc_interval", "Garbage collection interval for old alerts").Envar("SIGNALILO_ICINGA_GC_INTERVAL").Default("15m").DurationVar(&s.config.GcInterval)
 	serve.Flag("icinga_keep_for", "How long to keep old alerts around after they've been resolved").Envar("SIGNALILO_ICINGA_KEEP_FOR").Default("168h").DurationVar(&s.config.KeepFor)
 	serve.Flag("icinga_ca", "A custom CA certificate to use when connecting to the Icinga API").Envar("SIGNALILO_ICINGA_CA").StringVar(&s.config.CAData)
+
+	serve.Flag("icinga_static_service_var", "A variable to be set on each Icinga service created by Signalilo. The expected format is variable=value. Can be repeated.").Envar("SIGNALILO_ICINGA_STATIC_SERVICE_VAR").StringMapVar(&s.config.StaticServiceVars)
 
 	// Alert manager configuration
 	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)

@@ -58,6 +58,7 @@ type SignaliloConfig struct {
 	LogLevel           int
 	KeepFor            time.Duration
 	CAData             string
+	StaticServiceVars  map[string]string
 }
 
 func ConfigInitialize(configuration Configuration) {

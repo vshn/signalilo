@@ -55,3 +55,18 @@ func mapIcingaVariable(key, value string) (string, interface{}, error) {
 
 	return "", nil, ErrorUnknownMappingType
 }
+
+func addStaticIcingaVariables(vars icinga2.Vars, staticVars map[string]string, log logr.Logger) icinga2.Vars {
+	for k, v := range staticVars {
+		// Only add static variable if it's not already set on the
+		// service.
+		if ev, ok := vars[k]; ok {
+			log.V(2).Infof("Not adding static variable %v=%v to service; service already has %v=%v", k, v, k, ev)
+		} else {
+			log.V(2).Infof("Adding static variable %v=%v to service", k, v)
+			vars[k] = v
+		}
+	}
+
+	return vars
+}
