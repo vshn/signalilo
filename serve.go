@@ -143,9 +143,9 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 	if alertManagerConfig.UseTLS {
 		s.logger.Infof("Using TLS: certificate=%v, key=%v", alertManagerConfig.TLSCertPath, alertManagerConfig.TLSKeyPath)
 		return http.ListenAndServeTLS(listenAddress, alertManagerConfig.TLSCertPath, alertManagerConfig.TLSKeyPath, nil)
-	} else {
-		return http.ListenAndServe(listenAddress, nil)
 	}
+
+	return http.ListenAndServe(listenAddress, nil)
 }
 
 func (s *ServeCommand) initialize(ctx *kingpin.ParseContext) error {
