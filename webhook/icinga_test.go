@@ -116,7 +116,7 @@ var (
 func TestValidateServiceName(t *testing.T) {
 	for name, tcase := range serviceNames {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, validateServiceName(tcase.name), tcase.ok, "service name validation works correctly")
+			assert.Equal(t, tcase.ok, validateServiceName(tcase.name), "service name validation works correctly")
 		})
 	}
 }
@@ -129,14 +129,14 @@ func TestComputeServiceName(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			alert := tcase.alert
 			_, err := computeServiceName(template.Data{}, alert, c)
-			assert.Equal(t, err == nil, tcase.nameCompute, "service name computation successful")
+			assert.Equal(t, tcase.nameCompute, err == nil, "service name computation successful")
 		})
 	}
 	for name, tcase := range heartbeatAlerts {
 		t.Run(name, func(t *testing.T) {
 			alert := tcase.alert
 			_, err := computeServiceName(template.Data{}, alert, c)
-			assert.Equal(t, err == nil, tcase.nameCompute, "service name computation successful")
+			assert.Equal(t, tcase.nameCompute, err == nil, "service name computation successful")
 		})
 	}
 }
@@ -149,12 +149,14 @@ func TestUpdateOrCreateRegularService(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			alert := tcase.alert
 			svcName, err := computeServiceName(template.Data{}, alert, c)
+			assert.NoError(t, err)
 			displayName, err := computeDisplayName(template.Data{}, alert)
+			assert.NoError(t, err)
 			svc, err := updateOrCreateService(i, "test.vshn.net", svcName, displayName, alert, c)
-			assert.Equal(t, err == nil, true, fmt.Sprintf("Alert: %+v -> %v; err = %v", alert, svc, err))
-			assert.Equal(t, svc.MaxCheckAttempts == 1, true, "soft states disabled for check %v", displayName)
-			assert.Equal(t, svc.EnableActiveChecks, false, "active checks disabled")
-			assert.Equal(t, svc.CheckInterval == 43200, true, "default check interval set")
+			assert.NoError(t, err, fmt.Sprintf("Alert: %+v -> %v; err = %v", alert, svc, err))
+			assert.Equal(t, 1.0, svc.MaxCheckAttempts, "soft states disabled for check %v", displayName)
+			assert.False(t, svc.EnableActiveChecks, "active checks disabled")
+			assert.Equal(t, 43200.0, svc.CheckInterval, "default check interval set")
 		})
 	}
 }
@@ -167,30 +169,34 @@ func TestUpdateOrCreateHeartbeatService(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			alert := tcase.alert
 			svcName, err := computeServiceName(template.Data{}, alert, c)
+			assert.NoError(t, err)
 			displayName, err := computeDisplayName(template.Data{}, alert)
+			assert.NoError(t, err)
 			svc, err := updateOrCreateService(i, "test.vshn.net", svcName, displayName, alert, c)
-			assert.Equal(t, err == nil, true, "service creation successful")
-			assert.Equal(t, svc.MaxCheckAttempts == 1, true, "soft states disabled")
-			assert.Equal(t, svc.EnableActiveChecks, true, "active checks enabled")
+			assert.NoError(t, err, "service creation successful")
+			assert.Equal(t, 1.0, svc.MaxCheckAttempts, "soft states disabled")
+			assert.True(t, svc.EnableActiveChecks, "active checks enabled")
 			// do math.Abs here to account for fp inaccuracies
 			// when testing for equality
 			assert.Equal(t, math.Abs(svc.CheckInterval-tcase.interval) < 0.0001, true, "check interval correct")
 			dummyText, ok := svc.Vars["dummy_text"]
+			assert.True(t, ok, "Dummy text is set")
 			dummyState, ok := svc.Vars["dummy_state"]
-			assert.Equal(t, ok, true, "Dummy text is set")
-			assert.Equal(t, ok, true, "Dummy state is set")
-			assert.Equal(t, dummyState == tcase.exitStatus, true, "dummy_state of heartbeat is correct")
-			assert.Equal(t, dummyText == tcase.message, true, "dummy_text of heartbeat is correct")
+			assert.True(t, ok, "Dummy state is set")
+			assert.Equal(t, tcase.exitStatus, dummyState, "dummy_state of heartbeat is correct")
+			assert.Equal(t, tcase.message, dummyText, "dummy_text of heartbeat is correct")
 		})
 	}
 	for name, tcase := range resolvedHeartbeatAlerts {
 		t.Run(name, func(t *testing.T) {
 			alert := tcase.alert
 			svcName, err := computeServiceName(template.Data{}, alert, c)
+			assert.NoError(t, err)
 			displayName, err := computeDisplayName(template.Data{}, alert)
+			assert.NoError(t, err)
 			svc, err := updateOrCreateService(i, "test.vshn.net", svcName, displayName, alert, c)
-			assert.Equal(t, err == nil, true, "service creation successful")
-			assert.Equal(t, svc.Name == "", true, "no service object created for resolved heartbeat")
+			assert.NoError(t, err, "service creation successful")
+			assert.Equal(t, "", svc.Name, "no service object created for resolved heartbeat")
 		})
 	}
 }

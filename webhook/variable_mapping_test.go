@@ -54,15 +54,15 @@ func TestMapIcingaVariables(t *testing.T) {
 		"b":                    42,
 		"c":                    "c",
 	}, vars)
-	expected_errs := []string{
+	expectedErrs := []string{
 		"INFO Failed to map Icinga variable 'icinga_unknown_d': unknown type",
 		"INFO Failed to map Icinga variable 'icinga_number_e': strconv.Atoi: parsing \"e\": invalid syntax",
 	}
-	sort.Strings(expected_errs)
-	actual_errs := strings.Split(strings.TrimSpace(l.Buf().String()), "\n")
-	sort.Strings(actual_errs)
+	sort.Strings(expectedErrs)
+	actualErrs := strings.Split(strings.TrimSpace(l.Buf().String()), "\n")
+	sort.Strings(actualErrs)
 
-	assert.Equal(t, strings.Join(expected_errs, "\n"), strings.Join(actual_errs, "\n"))
+	assert.Equal(t, strings.Join(expectedErrs, "\n"), strings.Join(actualErrs, "\n"))
 }
 
 func TestAddStaticVariables(t *testing.T) {
