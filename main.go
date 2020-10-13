@@ -16,6 +16,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
+// Version information
 var (
 	Version   = "undefined"
 	BuildDate = "Now"

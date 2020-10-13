@@ -91,8 +91,10 @@ func makeCertPool(c *SignaliloConfig, l logr.Logger) (*x509.CertPool, error) {
 }
 
 func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) {
-
 	rootCAs, err := x509.SystemCertPool()
+	if err != nil && c.CAData == "" {
+		return nil, fmt.Errorf("could not load system rootCA and no CA provided: %w", err)
+	}
 	if c.CAData != "" {
 		rootCAs, err = makeCertPool(c, l)
 		if err != nil {

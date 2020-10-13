@@ -9,10 +9,14 @@ import (
 	"github.com/vshn/go-icinga2-client/icinga2"
 )
 
+// Error messages
 var (
 	ErrorNotAMappingKey     = errors.New("key does meet the mappable pattern")
 	ErrorUnknownMappingType = errors.New("unknown type")
-	MappingKeyPattern       = regexp.MustCompile("^icinga_([a-z]+)_(.*)$")
+)
+
+var (
+	mappingKeyPattern = regexp.MustCompile("^icinga_([a-z]+)_(.*)$")
 )
 
 func mapIcingaVariables(vars icinga2.Vars, kv map[string]string, prefix string, log logr.Logger) icinga2.Vars {
@@ -34,7 +38,7 @@ func mapIcingaVariables(vars icinga2.Vars, kv map[string]string, prefix string, 
 }
 
 func mapIcingaVariable(key, value string) (string, interface{}, error) {
-	matches := MappingKeyPattern.FindStringSubmatch(key)
+	matches := mappingKeyPattern.FindStringSubmatch(key)
 	if len(matches) < 3 {
 		return key, value, ErrorNotAMappingKey
 	}

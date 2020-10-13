@@ -59,8 +59,8 @@ func computeServiceName(
 	hash := sha256.New()
 	// use bridge uuid to ensure we can't accidentally touch another
 	// instance's services
-	hash.Write([]byte(c.GetConfig().UUID))
-	hash.Write([]byte(mapToStableString(alert.Labels)))
+	_, _ = hash.Write([]byte(c.GetConfig().UUID))
+	_, _ = hash.Write([]byte(mapToStableString(alert.Labels)))
 	// 8 bytes gives us 16 characters
 	labelhash := fmt.Sprintf("%x", hash.Sum(nil)[:8])
 
@@ -120,8 +120,8 @@ func createServiceData(hostname string,
 	// Set defaults
 	serviceVars["bridge_uuid"] = config.UUID
 	serviceVars["keep_for"] = config.KeepFor
-	serviceVars = mapIcingaVariables(serviceVars, alert.Labels, "label_", c.GetLogger())
-	serviceVars = mapIcingaVariables(serviceVars, alert.Annotations, "annotation_", c.GetLogger())
+	serviceVars = mapIcingaVariables(serviceVars, alert.Labels, "label_", l)
+	serviceVars = mapIcingaVariables(serviceVars, alert.Annotations, "annotation_", l)
 	serviceVars = addStaticIcingaVariables(serviceVars, config.StaticServiceVars, l)
 
 	// Create service attrs object
