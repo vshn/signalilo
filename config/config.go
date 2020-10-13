@@ -10,6 +10,7 @@
 package config
 
 import (
+	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"os"
@@ -27,6 +28,7 @@ type icingaConfig struct {
 	User              string
 	Password          string
 	InsecureTLS       bool
+	X509VerifyCN      bool
 	DisableKeepAlives bool
 	Debug             bool
 }
@@ -102,14 +104,48 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 		}
 	}
 
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: c.IcingaConfig.InsecureTLS,
+		RootCAs:            rootCAs,
+	}
+
+	if c.IcingaConfig.X509VerifyCN {
+		// Set InsecureSkipVerify to skip default verification. This
+		// does not disable VerifyConnection
+		tlsConfig.InsecureSkipVerify = true
+		// Set custom VerifyConnection function which verifies the
+		// server's name against the certificate's CN instead of the
+		// certificate's SAN. The custom function still respects the
+		// IcingaConfig.InsecureTLS setting.
+		tlsConfig.VerifyConnection = func(cs tls.ConnectionState) error {
+			if c.IcingaConfig.InsecureTLS {
+				// Don't verify anything if user requested insecure
+				// TLS operation
+				return nil
+			}
+			commonName := cs.PeerCertificates[0].Subject.CommonName
+			if commonName != cs.ServerName {
+				return fmt.Errorf("invalid certificate name %q, expected %q", commonName, cs.ServerName)
+			}
+			opts := x509.VerifyOptions{
+				Roots:         rootCAs,
+				Intermediates: x509.NewCertPool(),
+			}
+			for _, cert := range cs.PeerCertificates[1:] {
+				opts.Intermediates.AddCert(cert)
+			}
+			_, err := cs.PeerCertificates[0].Verify(opts)
+			return err
+		}
+	}
+
 	client, err := icinga2.New(icinga2.WebClient{
 		URL:               c.IcingaConfig.URL,
 		Username:          c.IcingaConfig.User,
 		Password:          c.IcingaConfig.Password,
 		Debug:             c.IcingaConfig.Debug,
-		InsecureTLS:       c.IcingaConfig.InsecureTLS,
 		DisableKeepAlives: c.IcingaConfig.DisableKeepAlives,
-		RootCAs:           rootCAs})
+		TLSConfig:         tlsConfig})
 	if err != nil {
 		return nil, err
 	}
