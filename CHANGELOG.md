@@ -5,6 +5,29 @@ Please document all notable changes to this project in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+## [v0.7.0]
+
+### Added
+
+- Add ability to disable http keep-alives when connecting to Icinga2 API ([#30])
+- Support for injecting variables with static value on all Icinga2 services ([#39])
+- Introduce option to continue using CN to verify TLS certificates ([#41])
+
+### Notes
+
+- Going forward, building Signalilo requires Go 1.15+, due to the changes
+  introduced in [#41], which make use of the `tls.Config` field
+  `VerifyConnection` which was introduced in Go 1.15.
+  Users of the Docker image don't need to make any changes.
+- By default, the Icinga2 API server name is verified against the
+  certificate's CN field.
+  If your Icinga2 API certificate is only valid when checking the
+  certificate's SAN field, please run Signalilo with
+  `--icinga_x509_verify_cn=false` which turns on the new Go default behavior
+  which ignores the CN field and checks against the SAN field.
+
 ## [v0.6.0]
 
 ### Fixed
@@ -53,6 +76,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 Initial implementation
 
+[Unreleased]: https://github.com/vshn/signalilo/compare/v0.7.0...HEAD
 [0.1.0]: https://github.com/vshn/signalilo/releases/tag/0.1.0
 [0.1.1]: https://github.com/vshn/signalilo/releases/tag/0.1.1
 [0.2.0]: https://github.com/vshn/signalilo/releases/tag/0.2.0
@@ -60,6 +84,10 @@ Initial implementation
 [v0.4.0]: https://github.com/vshn/signalilo/releases/tag/v0.4.0
 [v0.5.0]: https://github.com/vshn/signalilo/releases/tag/v0.5.0
 [v0.6.0]: https://github.com/vshn/signalilo/releases/tag/v0.6.0
+[v0.7.0]: https://github.com/vshn/signalilo/releases/tag/v0.7.0
 [#19]: https://github.com/vshn/signalilo/pull/19
 [#21]: https://github.com/vshn/signalilo/pull/21
 [#24]: https://github.com/vshn/signalilo/pull/24
+[#30]: https://github.com/vshn/signalilo/pull/30
+[#39]: https://github.com/vshn/signalilo/pull/39
+[#41]: https://github.com/vshn/signalilo/pull/41
