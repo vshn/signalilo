@@ -142,9 +142,19 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		}
 		l.V(2).Infof("Executing ProcessCheckResult on icinga2 for %v: exit status %v",
 			serviceName, exitStatus)
+
+		// Get the Plugin Output from the first Annotation we find that has some data
+		pluginOutput := ""
+		for _, v := range c.GetConfig().AlertManagerConfig.PluginOutputAnnotations {
+			pluginOutput = alert.Annotations[v]
+			if pluginOutput != "" {
+				break
+			}
+		}
+
 		err = icinga.ProcessCheckResult(svc, icinga2.Action{
 			ExitStatus:   exitStatus,
-			PluginOutput: alert.Annotations["message"],
+			PluginOutput: pluginOutput,
 		})
 		if err != nil {
 			l.Errorf("Error in ProcessCheckResult for %v: %v", serviceName, err)

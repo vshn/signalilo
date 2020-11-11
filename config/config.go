@@ -44,10 +44,11 @@ type Configuration interface {
 }
 
 type alertManagerConfig struct {
-	BearerToken string
-	TLSCertPath string
-	TLSKeyPath  string
-	UseTLS      bool
+	BearerToken             string
+	TLSCertPath             string
+	TLSKeyPath              string
+	UseTLS                  bool
+	PluginOutputAnnotations []string
 }
 
 type SignaliloConfig struct {

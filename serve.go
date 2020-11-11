@@ -191,4 +191,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("alertmanager_bearer_token", "Bearer token for incoming requests").Envar("SIGNALILO_ALERTMANAGER_BEARER_TOKEN").Required().StringVar(&s.config.AlertManagerConfig.BearerToken)
 	serve.Flag("alertmanager_tls_cert", "Path of certificate file for TLS-enabled webhook endpoint. Should contain the full chain").Envar("SIGNALILO_ALERTMANAGER_TLS_CERT").StringVar(&s.config.AlertManagerConfig.TLSCertPath)
 	serve.Flag("alertmanager_tls_key", "Path of private key file for TLS-enabled webhook endpoint").Envar("SIGNALILO_ALERTMANAGER_TLS_KEY").StringVar(&s.config.AlertManagerConfig.TLSKeyPath)
+
+	serve.Flag("alertmanager_pluginoutput_annotations", "List of Annotation names to be used to set the Plugin Output for the Icinga Service").Default("message").Envar("SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS").StringsVar(&s.config.AlertManagerConfig.PluginOutputAnnotations)
+
 }
