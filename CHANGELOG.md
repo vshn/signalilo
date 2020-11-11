@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [v0.8.0]
+
+### Added
+
+- Option to allow changing the annotation name used for `plugin_output` ([#44])
+
+### Fixed
+
+- Update alertmanager mapping section in README ([#45])
+
 ## [v0.7.0]
 
 ### Added
@@ -76,7 +86,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 Initial implementation
 
-[Unreleased]: https://github.com/vshn/signalilo/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/vshn/signalilo/compare/v0.8.0...HEAD
 [0.1.0]: https://github.com/vshn/signalilo/releases/tag/0.1.0
 [0.1.1]: https://github.com/vshn/signalilo/releases/tag/0.1.1
 [0.2.0]: https://github.com/vshn/signalilo/releases/tag/0.2.0
@@ -85,9 +95,12 @@ Initial implementation
 [v0.5.0]: https://github.com/vshn/signalilo/releases/tag/v0.5.0
 [v0.6.0]: https://github.com/vshn/signalilo/releases/tag/v0.6.0
 [v0.7.0]: https://github.com/vshn/signalilo/releases/tag/v0.7.0
+[v0.8.0]: https://github.com/vshn/signalilo/releases/tag/v0.8.0
 [#19]: https://github.com/vshn/signalilo/pull/19
 [#21]: https://github.com/vshn/signalilo/pull/21
 [#24]: https://github.com/vshn/signalilo/pull/24
 [#30]: https://github.com/vshn/signalilo/pull/30
 [#39]: https://github.com/vshn/signalilo/pull/39
 [#41]: https://github.com/vshn/signalilo/pull/41
+[#44]: https://github.com/vshn/signalilo/pull/44
+[#45]: https://github.com/vshn/signalilo/pull/45
