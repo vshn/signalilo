@@ -12,7 +12,9 @@ jobs:
     env:
       IMAGE: docker.io/${{ github.repository }}
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: "0"
     - name: Set version latest
       if: github.ref == 'refs/heads/master'
       run: echo "VERSION=latest" >> ${GITHUB_ENV}
