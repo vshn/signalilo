@@ -87,7 +87,7 @@ Optional
   Path of private key file for TLS-enabled webhook endpoint. TLS is enabled
   when both TLS_CERT and TLS_KEY are set.
 * `--alertmanager_pluginoutput_annotations`:
-  The name of an annotation to retrive the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
+  The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
 
 ## Integration to Prometheus/Alertmanager.
 
