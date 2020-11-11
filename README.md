@@ -122,14 +122,22 @@ information, the check generated in Icinga will be lacking.
 Required labels:
 
 * `severity`: Must be one of `WARNING` or `CRITICAL`.
+* `alertname` mapped to `display_name`.
 
 Required annotations:
 
-* `summary` mapped to `display_name`.
 * `description`: mapped to `notes`.
 * `message`: mapped to `plugin_output`.
 
 You can also use the `--alertmanager_pluginoutput_annotations` option to change the annotation used for the `plugin_output`.
+
+Optional annotations:
+
+* `runbook_url`: mapped to `notes_url
+
+Infered fields:
+
+* `generatorURL`: mapped to `action_url`
 
 ## Integration with Icinga
 
