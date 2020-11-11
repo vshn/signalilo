@@ -86,6 +86,8 @@ Optional
 * `--alertmanager_tls_key`/`SIGNALILO_ALERTMANAGER_TLS_KEY`:
   Path of private key file for TLS-enabled webhook endpoint. TLS is enabled
   when both TLS_CERT and TLS_KEY are set.
+* `--alertmanager_pluginoutput_annotations`:
+  The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
 
 ## Integration to Prometheus/Alertmanager.
 
@@ -127,6 +129,8 @@ Required annotations:
 * `description`: mapped to `notes`.
 * `message`: mapped to `plugin_output`.
 
+You can also use the `--alertmanager_pluginoutput_annotations` option to change the annotation used for the `plugin_output`.
+
 Optional annotations:
 
 * `runbook_url`: mapped to `notes_url
@@ -134,7 +138,6 @@ Optional annotations:
 Infered fields:
 
 * `generatorURL`: mapped to `action_url`
-
 
 ## Integration with Icinga
 
