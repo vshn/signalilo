@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Push image to DockerHub and Quay ([#47])
+
 ## [v0.8.0]
 
 ### Added
@@ -104,3 +108,4 @@ Initial implementation
 [#41]: https://github.com/vshn/signalilo/pull/41
 [#44]: https://github.com/vshn/signalilo/pull/44
 [#45]: https://github.com/vshn/signalilo/pull/45
+[#47]: https://github.com/vshn/signalilo/pull/47
