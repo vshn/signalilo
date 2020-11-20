@@ -7,8 +7,9 @@ those webhooks to Icinga2 using https://github.com/vshn/go-icinga2-client.
 See [CHANGELOG.md](/CHANGELOG.md) for changelogs of each release version of
 Signalilo.
 
-See [DockerHub](https://hub.docker.com/r/vshn/signalilo) for pre-built Docker
-images of Signalilo
+See [DockerHub](https://hub.docker.com/r/vshn/signalilo) or
+[Quay.io](https://quay.io/repository/vshn/signalilo) for pre-built
+Docker images of Signalilo.
 
 ## Usage
 
