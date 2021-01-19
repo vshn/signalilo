@@ -240,8 +240,12 @@ func NewMockConfiguration(verbosity int) Configuration {
 	mockCfg := &MockConfiguration{
 		config: signaliloCfg,
 	}
-	mockCfg.logger = MockLogger(mockCfg.config.LogLevel)
+	log := MockLogger(mockCfg.config.LogLevel)
+	mockCfg.logger = log
 	ConfigInitialize(mockCfg)
+	// reset logger to the MockLogger, since ConfigInitialize overwrites
+	// the logger.
+	mockCfg.logger = log
 	// TODO: set mockCfg.icingaClient as mocked IcingaClient
 	return mockCfg
 }
