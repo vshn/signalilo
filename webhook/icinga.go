@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -85,29 +84,13 @@ func computeDisplayName(data template.Data, alert template.Alert) (string, error
 
 // severityToExitStatus computes an exitstatus which Icinga2 understands from
 // an alert's status and severity label
-func severityToExitStatus(status string, severity string, severityLevels map[string]string) int {
-
-	// Create the default levels and then merge the custom ones into it.
-	// This keeps the defaults for backwards compatibility and allows both additions and overrides.
-	allLevels := map[string]int{
-		"normal":   0,
-		"warning":  1,
-		"critical": 2,
-	}
-	for k, v := range severityLevels {
-		// Ensure the user set configuration values are valid otherwise default to UNKNOWN
-		l, err := strconv.ParseInt(v, 10, 32)
-		if err != nil || l < 0 || l > 3 {
-			l = 3
-		}
-		allLevels[k] = int(l)
-	}
+func severityToExitStatus(status string, severity string, severityLevels map[string]int) int {
 
 	// default to "UNKNOWN"
 	exitstatus := 3
 	if status == "firing" {
 		var ok bool
-		exitstatus, ok = allLevels[severity]
+		exitstatus, ok = severityLevels[severity]
 		if !ok {
 			exitstatus = 3
 		}
@@ -199,7 +182,7 @@ func updateOrCreateService(icinga icinga2.Client,
 		heartbeatInterval = interval
 	}
 
-	status := severityToExitStatus(alert.Status, alert.Labels["severity"], c.GetConfig().CustomSeverityLevels)
+	status := severityToExitStatus(alert.Status, alert.Labels["severity"], c.GetConfig().MergedSeverityLevels)
 
 	serviceData := createServiceData(hostname, serviceName, displayName, alert, status, heartbeatInterval, c)
 

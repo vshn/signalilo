@@ -14,6 +14,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/bketelsen/logr"
@@ -63,6 +64,7 @@ type SignaliloConfig struct {
 	CAData               string
 	StaticServiceVars    map[string]string
 	CustomSeverityLevels map[string]string
+	MergedSeverityLevels map[string]int
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -84,6 +86,24 @@ func ConfigInitialize(configuration Configuration) {
 	if config.AlertManagerConfig.TLSCertPath != "" && config.AlertManagerConfig.TLSKeyPath != "" {
 		config.AlertManagerConfig.UseTLS = true
 	}
+
+	// Create the default severity levels and then merge any custom ones into it.
+	// This keeps the defaults for backwards compatibility and allows both additions and overrides.
+	allLevels := map[string]int{
+		"normal":   0,
+		"warning":  1,
+		"critical": 2,
+	}
+	for k, v := range config.CustomSeverityLevels {
+		// Ensure the user set configuration values are valid otherwise default to UNKNOWN
+		l, err := strconv.ParseInt(v, 10, 32)
+		if err != nil || l < 0 || l > 3 {
+			l = 3
+		}
+		allLevels[k] = int(l)
+	}
+	config.MergedSeverityLevels = allLevels
+
 }
 
 func makeCertPool(c *SignaliloConfig, l logr.Logger) (*x509.CertPool, error) {
