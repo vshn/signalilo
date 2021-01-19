@@ -195,22 +195,22 @@ type MockConfiguration struct {
 	icingaClient icinga2.Client
 }
 
-func (c MockConfiguration) GetConfig() *SignaliloConfig {
+func (c *MockConfiguration) GetConfig() *SignaliloConfig {
 	return &c.config
 }
-func (c MockConfiguration) GetLogger() logr.Logger {
+func (c *MockConfiguration) GetLogger() logr.Logger {
 	return c.logger
 }
-func (c MockConfiguration) GetIcingaClient() icinga2.Client {
+func (c *MockConfiguration) GetIcingaClient() icinga2.Client {
 	return c.icingaClient
 }
-func (c MockConfiguration) SetConfig(config SignaliloConfig) {
+func (c *MockConfiguration) SetConfig(config SignaliloConfig) {
 	c.config = config
 }
-func (c MockConfiguration) SetLogger(logger logr.Logger) {
+func (c *MockConfiguration) SetLogger(logger logr.Logger) {
 	c.logger = logger
 }
-func (c MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
+func (c *MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
 	c.icingaClient = icinga
 }
 
@@ -237,7 +237,7 @@ func NewMockConfiguration(verbosity int) Configuration {
 		KeepFor:           5 * time.Minute,
 		CAData:            "",
 	}
-	mockCfg := MockConfiguration{
+	mockCfg := &MockConfiguration{
 		config: signaliloCfg,
 	}
 	mockCfg.logger = MockLogger(mockCfg.config.LogLevel)
