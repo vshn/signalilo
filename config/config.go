@@ -14,6 +14,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/bketelsen/logr"
@@ -52,16 +53,18 @@ type alertManagerConfig struct {
 }
 
 type SignaliloConfig struct {
-	UUID               string
-	HostName           string
-	IcingaConfig       icingaConfig
-	GcInterval         time.Duration
-	AlertManagerConfig alertManagerConfig
-	HeartbeatInterval  time.Duration
-	LogLevel           int
-	KeepFor            time.Duration
-	CAData             string
-	StaticServiceVars  map[string]string
+	UUID                 string
+	HostName             string
+	IcingaConfig         icingaConfig
+	GcInterval           time.Duration
+	AlertManagerConfig   alertManagerConfig
+	HeartbeatInterval    time.Duration
+	LogLevel             int
+	KeepFor              time.Duration
+	CAData               string
+	StaticServiceVars    map[string]string
+	CustomSeverityLevels map[string]string
+	MergedSeverityLevels map[string]int
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -83,6 +86,24 @@ func ConfigInitialize(configuration Configuration) {
 	if config.AlertManagerConfig.TLSCertPath != "" && config.AlertManagerConfig.TLSKeyPath != "" {
 		config.AlertManagerConfig.UseTLS = true
 	}
+
+	// Create the default severity levels and then merge any custom ones into it.
+	// This keeps the defaults for backwards compatibility and allows both additions and overrides.
+	allLevels := map[string]int{
+		"normal":   0,
+		"warning":  1,
+		"critical": 2,
+	}
+	for k, v := range config.CustomSeverityLevels {
+		// Ensure the user set configuration values are valid otherwise default to UNKNOWN
+		l, err := strconv.ParseInt(v, 10, 32)
+		if err != nil || l < 0 || l > 3 {
+			l = 3
+		}
+		allLevels[k] = int(l)
+	}
+	config.MergedSeverityLevels = allLevels
+
 }
 
 func makeCertPool(c *SignaliloConfig, l logr.Logger) (*x509.CertPool, error) {
@@ -174,22 +195,22 @@ type MockConfiguration struct {
 	icingaClient icinga2.Client
 }
 
-func (c MockConfiguration) GetConfig() *SignaliloConfig {
+func (c *MockConfiguration) GetConfig() *SignaliloConfig {
 	return &c.config
 }
-func (c MockConfiguration) GetLogger() logr.Logger {
+func (c *MockConfiguration) GetLogger() logr.Logger {
 	return c.logger
 }
-func (c MockConfiguration) GetIcingaClient() icinga2.Client {
+func (c *MockConfiguration) GetIcingaClient() icinga2.Client {
 	return c.icingaClient
 }
-func (c MockConfiguration) SetConfig(config SignaliloConfig) {
+func (c *MockConfiguration) SetConfig(config SignaliloConfig) {
 	c.config = config
 }
-func (c MockConfiguration) SetLogger(logger logr.Logger) {
+func (c *MockConfiguration) SetLogger(logger logr.Logger) {
 	c.logger = logger
 }
-func (c MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
+func (c *MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
 	c.icingaClient = icinga
 }
 
@@ -216,11 +237,15 @@ func NewMockConfiguration(verbosity int) Configuration {
 		KeepFor:           5 * time.Minute,
 		CAData:            "",
 	}
-	mockCfg := MockConfiguration{
+	mockCfg := &MockConfiguration{
 		config: signaliloCfg,
 	}
-	mockCfg.logger = MockLogger(mockCfg.config.LogLevel)
+	log := MockLogger(mockCfg.config.LogLevel)
+	mockCfg.logger = log
 	ConfigInitialize(mockCfg)
+	// reset logger to the MockLogger, since ConfigInitialize overwrites
+	// the logger.
+	mockCfg.logger = log
 	// TODO: set mockCfg.icingaClient as mocked IcingaClient
 	return mockCfg
 }

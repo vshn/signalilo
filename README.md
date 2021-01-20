@@ -89,6 +89,8 @@ Optional
   when both TLS_CERT and TLS_KEY are set.
 * `--alertmanager_pluginoutput_annotations`:
   The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
+* `--alertmanager_custom_severity_levels`/`SIGNALILO_ALERTMANAGER_CUSTOM_SEVERITY_LEVELS`:
+  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown. Can be set multiple times and you can also override the default values for the labels `warning` and `critical`. 
 
 ## Integration to Prometheus/Alertmanager.
 
@@ -122,7 +124,7 @@ information, the check generated in Icinga will be lacking.
 
 Required labels:
 
-* `severity`: Must be one of `WARNING` or `CRITICAL`.
+* `severity`: Must be one of `WARNING` or `CRITICAL`, or any values set via the `--alertmanager_custom_severity_levels` option.
 * `alertname` mapped to `display_name`.
 
 Required annotations:

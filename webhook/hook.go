@@ -135,7 +135,7 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 			continue
 		}
 
-		exitStatus := severityToExitStatus(alert.Status, alert.Labels["severity"])
+		exitStatus := severityToExitStatus(alert.Status, alert.Labels["severity"], c.GetConfig().MergedSeverityLevels)
 		if svc.EnableActiveChecks {
 			// override exitStatus for sending heartbeat
 			exitStatus = 0

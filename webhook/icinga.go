@@ -84,18 +84,14 @@ func computeDisplayName(data template.Data, alert template.Alert) (string, error
 
 // severityToExitStatus computes an exitstatus which Icinga2 understands from
 // an alert's status and severity label
-func severityToExitStatus(status string, severity string) int {
+func severityToExitStatus(status string, severity string, severityLevels map[string]int) int {
+
 	// default to "UNKNOWN"
 	exitstatus := 3
 	if status == "firing" {
-		switch severity {
-		case "normal":
-			exitstatus = 0
-		case "warning":
-			exitstatus = 1
-		case "critical":
-			exitstatus = 2
-		default:
+		var ok bool
+		exitstatus, ok = severityLevels[severity]
+		if !ok {
 			exitstatus = 3
 		}
 	} else if status == "resolved" {
@@ -186,7 +182,7 @@ func updateOrCreateService(icinga icinga2.Client,
 		heartbeatInterval = interval
 	}
 
-	status := severityToExitStatus(alert.Status, alert.Labels["severity"])
+	status := severityToExitStatus(alert.Status, alert.Labels["severity"], c.GetConfig().MergedSeverityLevels)
 
 	serviceData := createServiceData(hostname, serviceName, displayName, alert, status, heartbeatInterval, c)
 
