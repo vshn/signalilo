@@ -414,6 +414,7 @@ github.com/stretchr/testify v1.5.1 h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
+github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
@@ -424,6 +425,8 @@ github.com/vshn/go-icinga2-client v0.0.11 h1:R9AhqestE+7ct3xMvbHhup1RLP86X74Qqzh
 github.com/vshn/go-icinga2-client v0.0.11/go.mod h1:T6r6HQ22NZsSUI/u5ThOlPsQrtbnJIImZTPAvEOSCdI=
 github.com/vshn/go-icinga2-client v0.0.12 h1:HCNgId5XjUeahhe0+K3YMQ6RJi5nrKeR9b9K7l70VVk=
 github.com/vshn/go-icinga2-client v0.0.12/go.mod h1:T6r6HQ22NZsSUI/u5ThOlPsQrtbnJIImZTPAvEOSCdI=
+github.com/vshn/go-icinga2-client v0.0.13 h1:zX0xceD5zyqOojZpPfNWyiqXnMAjQpc7fgfekR6u2ts=
+github.com/vshn/go-icinga2-client v0.0.13/go.mod h1:T6r6HQ22NZsSUI/u5ThOlPsQrtbnJIImZTPAvEOSCdI=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc/go.mod h1:Jhud4/sHMO4oL310DaZAKk9ZaJ08SJfe+sJh0HrGL1Y=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
