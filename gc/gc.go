@@ -69,13 +69,17 @@ func Collect(ts time.Time, c config.Configuration) error {
 	// Get all signalilo services
 	icinga := c.GetIcingaClient()
 	hostname := c.GetConfig().HostName
-	services, err := icinga.ListServices(fmt.Sprintf("host=%v", hostname))
+	services, err := icinga.ListServices(icinga2.QueryFilter{
+		Filter: fmt.Sprintf(`match("%v", service.host_name)`, hostname),
+	})
 	if err != nil {
 		l.Errorf(fmt.Sprintf("[Collect] Error while listing services: %v", err))
 		return err
 	}
 	l.V(2).Infof("[Collect] Found %v services with host = %v", len(services), hostname)
-	downtimes, err := icinga.ListDowntimes(fmt.Sprintf("host=%v", hostname))
+	downtimes, err := icinga.ListDowntimes(icinga2.QueryFilter{
+		Filter: fmt.Sprintf(`match("%v", downtime.host_name)`, hostname),
+	})
 	if err != nil {
 		l.Errorf(fmt.Sprintf("[Collect] Error while listing downtimes: %v", err))
 		return err

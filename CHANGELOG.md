@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Push image to DockerHub and Quay ([#47])
+- Option to configure custom severity to service level mappings ([#52])
+
+### Fixed
+
+- Fix service and downtime listing in garbage collector ([#64])
 
 ## [v0.8.0]
 
@@ -109,3 +114,5 @@ Initial implementation
 [#44]: https://github.com/vshn/signalilo/pull/44
 [#45]: https://github.com/vshn/signalilo/pull/45
 [#47]: https://github.com/vshn/signalilo/pull/47
+[#52]: https://github.com/vshn/signalilo/pull/52
+[#64]: https://github.com/vshn/signalilo/pull/64
