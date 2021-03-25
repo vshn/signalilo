@@ -63,7 +63,7 @@ Optional
   (default: false).
 * `--icinga_disable_keepalives`/`SIGNALILO_ICINGA_DISABLE_KEEPALIVES`:
   If true, disable http keep-alives with Icinga2 API and will only use
-  the connection to the server for a single HTTP request 
+  the connection to the server for a single HTTP request
   (default: false).
 * `--icinga_debug`/`SIGNALILO_ICINGA_DEBUG`:
   If true, enable debugging mode in Icinga client (default: false).
@@ -77,6 +77,16 @@ Optional
   (default 168h).
 * `--icinga_ca`/`SIGNALILO_ICINGA_CA`:
   A PEM string of the trusted CA certificate for the Icinga2 API certificate.
+* `--icinga_service_checks_active`/`SIGNALILO_ICINGA_SERVICE_CHECKS_ACTIVE`:
+  Use active checks for created icinga services to leverage on Alertmanager resend interval to manage stale checks (default: false).
+* `--icinga_service_checks_command`/`SIGNALILO_ICINGA_SERVICE_CHECKS_COMMAND`:
+  Name of the check command used in Icinga2 service creation (default: 'dummy').
+* `--icinga_service_checks_interval`/`SIGNALILO_ICINGA_SERVICE_CHECKS_INTERVAL`:
+  Interval (in seconds) to be used for icinga `check_interval` and `retry_interval`.
+  This should be set to a multiple of alertmanager `repeat_interval` in case
+  active checks are enabled (e.g. `1.1 < icinga_service_checks_interval/repeat_interval < 5`, default: 43200s).
+* `--icinga_service_max_check_attempts`/`SIGNALILO_ICINGA_SERVICE_MAX_CHECKS_ATTEMPTS`:
+  The maximum number of checks which are executed before changing to a hard state.
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:
   Port on which Signalilo listens to incoming webhooks (default 8888).
 * `--alertmanager_bearer_token`/`SIGNALILO_ALERTMANAGER_BEARER_TOKEN`:
