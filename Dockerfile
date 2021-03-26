@@ -31,6 +31,8 @@ RUN make build
 ############################
 FROM gcr.io/distroless/static:nonroot
 
+WORKDIR /
+
 COPY --from=builder /src/signalilo/signalilo /usr/local/bin/
 
 EXPOSE 8888

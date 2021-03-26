@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fix service and downtime listing in garbage collector ([#64])
+- Set workdir to root ([#72])
 
 ## [v0.8.0]
 
@@ -116,3 +117,4 @@ Initial implementation
 [#47]: https://github.com/vshn/signalilo/pull/47
 [#52]: https://github.com/vshn/signalilo/pull/52
 [#64]: https://github.com/vshn/signalilo/pull/64
+[#72]: https://github.com/vshn/signalilo/pull/72
