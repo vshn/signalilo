@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.15' ]
+        go: [ '1.15', '1.16' ]
     name: Go get with Go ${{ matrix.go }}
     steps:
     - uses: actions/setup-go@v2
