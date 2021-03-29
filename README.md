@@ -180,9 +180,9 @@ can be done accordingly. This is done by adding the type as part of the prefix
 Examples:
 
 * `foo` -> `label_foo` or an `anotation_foo`.
-* `icinga_foo_string` -> label/annotation named `foo` with value is passed
+* `icinga_string_foo` -> label/annotation named `foo` with value is passed
   as is.
-* `icinga_bar_number` -> label/annotation named `bar` with its value is
+* `icinga_number_bar` -> label/annotation named `bar` with its value is
   converted to an integer number.
 
 In case there is a label and an annotation with the `icinga_<type>` prefix, the
