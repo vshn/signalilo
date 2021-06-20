@@ -29,7 +29,7 @@ Helm
 
     helm install --name signalilo appuio/signalilo
 
-See https://github.com/appuio/charts/tree/master/signalilo.
+See https://github.com/appuio/charts/tree/master/appuio/signalilo.
 
 Docker
 
