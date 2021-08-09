@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Push image to DockerHub and Quay ([#47])
 - Option to configure custom severity to service level mappings ([#52])
+- Use HTTP proxy settings from environment ([#85])
 
 ### Fixed
 
@@ -118,3 +119,4 @@ Initial implementation
 [#52]: https://github.com/vshn/signalilo/pull/52
 [#64]: https://github.com/vshn/signalilo/pull/64
 [#72]: https://github.com/vshn/signalilo/pull/72
+[#85]: https://github.com/vshn/signalilo/pull/85
