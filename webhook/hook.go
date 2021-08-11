@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/prometheus/alertmanager/template"
@@ -96,7 +95,8 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 	host, err := icinga.GetHost(serviceHost)
 	if err != nil {
 		l.Errorf("Did not find service host %v: %v\n", host, err)
-		os.Exit(1)
+		asJSON(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	sameAlertName := false
