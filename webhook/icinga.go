@@ -90,7 +90,7 @@ func severityToExitStatus(status string, severity string, severityLevels map[str
 	exitstatus := 3
 	if status == "firing" {
 		var ok bool
-		exitstatus, ok = severityLevels[severity]
+		exitstatus, ok = severityLevels[strings.ToLower(severity)]
 		if !ok {
 			exitstatus = 3
 		}

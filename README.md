@@ -90,7 +90,7 @@ Optional
 * `--alertmanager_pluginoutput_annotations`/`SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`:
   The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
 * `--alertmanager_custom_severity_levels`/`SIGNALILO_ALERTMANAGER_CUSTOM_SEVERITY_LEVELS`:
-  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown. Can be set multiple times and you can also override the default values for the labels `warning` and `critical`. 
+  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown. Can be set multiple times and you can also override the default values for the labels `warning` and `critical`. The `severity` label is not case sensitive.
 
 The environment variable names are generated from the command-line flags. The flag is uppercased and all `-` characters are replaced with `_`. Signalilo uses the newline character `\n` to split flags that are allowed multiple times (like `SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`) into an array.
 
@@ -126,7 +126,7 @@ information, the check generated in Icinga will be lacking.
 
 Required labels:
 
-* `severity`: Must be one of `WARNING` or `CRITICAL`, or any values set via the `--alertmanager_custom_severity_levels` option.
+* `severity`: Must be one of `warning` or `critical`, or any values set via the `--alertmanager_custom_severity_levels` option.
 * `alertname` mapped to `display_name`.
 
 Required annotations:

@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bketelsen/logr"
@@ -100,7 +101,7 @@ func ConfigInitialize(configuration Configuration) {
 		if err != nil || l < 0 || l > 3 {
 			l = 3
 		}
-		allLevels[k] = int(l)
+		allLevels[strings.ToLower(k)] = int(l)
 	}
 	config.MergedSeverityLevels = allLevels
 
