@@ -66,6 +66,10 @@ type SignaliloConfig struct {
 	StaticServiceVars    map[string]string
 	CustomSeverityLevels map[string]string
 	MergedSeverityLevels map[string]int
+	ActiveChecks         bool
+	ChecksInterval       time.Duration
+	CheckCommand         string
+	MaxCheckAttempts     int
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -237,6 +241,10 @@ func NewMockConfiguration(verbosity int) Configuration {
 		LogLevel:          2,
 		KeepFor:           5 * time.Minute,
 		CAData:            "",
+		ActiveChecks:      false,
+		ChecksInterval:    12 * time.Hour,
+		CheckCommand:      "dummy",
+		MaxCheckAttempts:  1,
 	}
 	mockCfg := &MockConfiguration{
 		config: signaliloCfg,
