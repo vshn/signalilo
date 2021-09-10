@@ -24,7 +24,7 @@ jobs:
     - uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go }}
-    - run: go get -v github.com/vshn/signalilo@${{ github.head_ref }}
+    - run: go get -v github.com/${{ github.event.pull_request.head.repo.full_name }}@${{ github.head_ref }}
       env:
         GO111MODULE: on
         GOPROXY: direct
