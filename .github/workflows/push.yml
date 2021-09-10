@@ -43,3 +43,24 @@ jobs:
         docker login quay.io --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}"
         docker tag "${IMAGE}:${VERSION}" ${QUAY_IMAGE}:${VERSION}
         docker push "${QUAY_IMAGE}:${VERSION}"
+    - name: Build changelog from PRs with labels
+      if: startsWith(github.ref, 'refs/tags/v')
+      id: build_changelog
+      uses: mikepenz/release-changelog-builder-action@v2
+      with:
+        configuration: ".github/changelog-configuration.json"
+        # PreReleases still get a changelog, but the next full release gets a diff since the last full release,
+        # combining possible changelogs of all previous PreReleases in between.
+        # PreReleases show a partial changelog since last PreRelease.
+        ignorePreReleases: "${{ !contains(github.ref, '-rc') }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: ncipollo/release-action@v1
+      with:
+        body: ${{steps.build_changelog.outputs.changelog}}
+        prerelease: "${{ contains(github.ref, '-rc') }}"
+        # Ensure target branch for release is "master"
+        commit: master
+        token: ${{ secrets.GITHUB_TOKEN }}
