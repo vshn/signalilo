@@ -156,6 +156,24 @@ Infered fields:
 
 ## Integration with Icinga
 
+### Icinga host
+
+You need to create an Icinga service host which Signalilo can use.
+Signalilo is designed to expect that it has full control over one service host in Icinga.
+Therefore you should create a service host for each Signalilo instance which you're running.
+
+Each service host should look as shown below.
+You can add additional configurations (such as host variables) as you like.
+
+```
+object Host "signalilo_cluster.example.com"  {
+  display_name = "Signalilo signalilo_cluster.example.com"
+  check_command = "dummy"
+  enable_passive_checks = false
+  enable_perfdata = false
+}
+```
+
 ### Garbage Collection
 
 Service objects in Icinga will get garbage collected (aka deleted) on a regular basis, following these rules:
@@ -171,12 +189,30 @@ All state needed for doing garbage collection is stored in Icinga service variab
 On startup, Signalilo checks if the matching heartbeat service is available in
 Icinga, otherwise it exits with a fatal error. During operation, Signalilo
 regularly posts its state to the heartbeat service.  If no state update was
-provided, Icinga automatically marks the check as UNKNOWN.  See [Icinga2
-passive checks][passive_checks] for a description of how the service object
-needs to be configured.
+provided, Icinga automatically marks the check as UNKNOWN.
 
-[passive_checks]: https://wiki.vshn.net/display/VT/Icinga2+passive+checks
-[webhook_format]: https://prometheus.io/docs/alerting/configuration/#webhook_config.
+You need to configure the following service in Icinga:
+
+```
+object Service "heartbeat" {
+  check_command = "dummy"
+  check_interval = 10s
+
+  /* Set the state to CRITICAL (2) if freshness checks fail. */
+  vars.dummy_state = 2
+
+  /* Use a runtime function to retrieve the last check time and more details. */
+  vars.dummy_text = {{
+    var service = get_service(macro("$host.name$"), macro("$service.name$"))
+    var lastCheck = DateTime(service.last_check).to_string()
+
+    return "No check results received. Last result time: " + lastCheck
+  }}
+
+  /* This must match the name of the host object for the Signalilo instance */
+  host_name = "signalilo_cluster.example.com"
+}
+```
 
 ### Custom Variables
 
@@ -219,3 +255,4 @@ heartbeat checks.
 
 
 [Go duration]: https://golang.org/pkg/time/#ParseDuration
+[webhook_format]: https://prometheus.io/docs/alerting/configuration/#webhook_config.
