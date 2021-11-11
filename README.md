@@ -174,6 +174,43 @@ object Host "signalilo_cluster.example.com"  {
 }
 ```
 
+### Icinga API user
+
+We recommend that you create an API user per Icinga service host.
+This naturally ensures that you create an API user per Signalilo instance, since you should have a service host per Signalilo instance.
+In that case, you can restrict the API user's permissions to only interact with the service host belonging to the Signalilo instance as shown below.
+
+```
+object ApiUser "signalilo_cluster.example.com"  {
+  password = "verysecretpassword"
+  permissions = [
+  {
+    permission = "objects/query/*"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "objects/create/service"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "objects/modify/service"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "objects/delete/service"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "actions/process-check-result"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  }, ]
+}
+```
+
+Note that you don't have to use the same name for the API user as for its associated service host.
+However, you have to make sure that you compare `host.name` to the name of the service host for which the API user should have permissions.
+
+
 ### Garbage Collection
 
 Service objects in Icinga will get garbage collected (aka deleted) on a regular basis, following these rules:
