@@ -151,7 +151,7 @@ Infered fields:
 
 ### Plugin Output 
 
-By default Signailo will use the `message` Annotation to set the `plugin_output` in the Icinga Service.
+By default Signalilo will use the `message` Annotation to set the `plugin_output` in the Icinga Service.
 
 This can be changed by using the `--alertmanager_pluginoutput_annotations` to select either a
 different Annotation or to provide a list of Annotations where the first one with a value will be used.
@@ -163,7 +163,7 @@ Annotation name when looking up the Annotation to use for the Plugin Output (for
 This allows you to configure multiple Annotations with different values that are then used
 with the corresponding Service State to set the Plugin Output.
 
-If an Annotation is not found for that specific Service State then Signailo will fall back ot just using the Annotation name as configured.
+If an Annotation is not found for that specific Service State then Signalilo will fall back ot just using the Annotation name as configured.
 
 ## Integration with Icinga
 
