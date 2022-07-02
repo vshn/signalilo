@@ -195,5 +195,6 @@ func configureServeCommand(app *kingpin.Application) {
 
 	serve.Flag("alertmanager_pluginoutput_annotations", "List of Annotation names to be used to set the Plugin Output for the Icinga Service").Default("message").Envar("SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS").StringsVar(&s.config.AlertManagerConfig.PluginOutputAnnotations)
 	serve.Flag("alertmanager_custom_severity_levels", "Add or override the default mapping of Severity Levels to Service States. The expected format is Severity_Level=Service_State where the Service_State is 0=OK, 2=Warning, 3=Critical, 4=Unknown. Can be repeated.").Envar("SIGNALILO_ALERTMANAGER_CUSTOM_SEVERITY_LEVELS").StringMapVar(&s.config.CustomSeverityLevels)
+	serve.Flag("alertmanager_pluginoutput_by_states", "Enables support for dynamically selecting the Annotation name used for the Plugin Output based on the computed Service State.").Default("false").Envar("SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_BY_STATES").BoolVar(&s.config.AlertManagerConfig.PluginOutputByStates)
 
 }

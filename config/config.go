@@ -45,11 +45,13 @@ type Configuration interface {
 }
 
 type alertManagerConfig struct {
-	BearerToken             string
-	TLSCertPath             string
-	TLSKeyPath              string
-	UseTLS                  bool
-	PluginOutputAnnotations []string
+	BearerToken               string
+	TLSCertPath               string
+	TLSKeyPath                string
+	UseTLS                    bool
+	PluginOutputAnnotations   []string
+	PluginOutputByStates      bool
+	PluginOutputStateSuffixes []string
 }
 
 type SignaliloConfig struct {
@@ -103,6 +105,9 @@ func ConfigInitialize(configuration Configuration) {
 		allLevels[k] = int(l)
 	}
 	config.MergedSeverityLevels = allLevels
+
+	// Set the suffixes used for the PluginOutputByStates
+	config.AlertManagerConfig.PluginOutputStateSuffixes = []string{"ok", "warning", "critical", "unknown"}
 
 }
 
