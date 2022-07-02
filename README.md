@@ -156,7 +156,7 @@ By default Signailo will use the `message` Annotation to set the `plugin_output`
 This can be changed by using the `--alertmanager_pluginoutput_annotations` to select either a
 different Annotation or to provide a list of Annotations where the first one with a value will be used.
 
-Alternatively if you enable the `--alertmanager_pluginoutput_by_states` option then Signailo will
+Alternatively if you enable the `--alertmanager_pluginoutput_by_states` option then Signalilo will
 take the Service State name (`ok`, `warning`, `critical`, or `unknown`) and suffix this to the
 Annotation name when looking up the Annotation to use for the Plugin Output (for example: `message_ok`).
 
