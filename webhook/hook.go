@@ -147,6 +147,16 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		// Get the Plugin Output from the first Annotation we find that has some data
 		pluginOutput := ""
 		for _, v := range c.GetConfig().AlertManagerConfig.PluginOutputAnnotations {
+
+			// If the PluginOutputByStates option is enabled then first look for an annotation with the state suffix
+			// otherwise fall back to just using the PluginOutputAnnotations value as is
+			if c.GetConfig().AlertManagerConfig.PluginOutputByStates {
+				pluginOutput = alert.Annotations[fmt.Sprintf("%s_%s", v, c.GetConfig().AlertManagerConfig.PluginOutputStateSuffixes[exitStatus])]
+				if pluginOutput != "" {
+					break
+				}
+			}
+
 			pluginOutput = alert.Annotations[v]
 			if pluginOutput != "" {
 				break

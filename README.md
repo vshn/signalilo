@@ -99,6 +99,9 @@ Optional
   when both TLS_CERT and TLS_KEY are set.
 * `--alertmanager_pluginoutput_annotations`/`SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`:
   The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
+* `--alertmanager_pluginoutput_by_states`/`SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_BY_STATES`:
+  Enables support for dynamically selecting the Annotation name used for the Plugin Output based on the computed Service State.
+  See [Plugin Output](#plugin-output) for more details on this option.
 * `--alertmanager_custom_severity_levels`/`SIGNALILO_ALERTMANAGER_CUSTOM_SEVERITY_LEVELS`:
   Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown. Can be set multiple times and you can also override the default values for the labels `warning` and `critical`. The `severity` label is not case sensitive.
 
@@ -144,7 +147,9 @@ Required annotations:
 * `description`: mapped to `notes`.
 * `message`: mapped to `plugin_output`.
 
-You can also use the `--alertmanager_pluginoutput_annotations` option to change the annotation used for the `plugin_output`.
+You can also use the `--alertmanager_pluginoutput_annotations` option to change
+the Annotation used for the `plugin_output` as well as the `--alertmanager_pluginoutput_by_states` option.
+See [Plugin Output](#plugin-output) for more details.
 
 Optional annotations:
 
@@ -153,6 +158,22 @@ Optional annotations:
 Infered fields:
 
 * `generatorURL`: mapped to `action_url`
+
+### Plugin Output 
+
+By default Signalilo will use the `message` Annotation to set the `plugin_output` in the Icinga Service.
+
+This can be changed by using the `--alertmanager_pluginoutput_annotations` to select either a
+different Annotation or to provide a list of Annotations where the first one with a value will be used.
+
+Alternatively if you enable the `--alertmanager_pluginoutput_by_states` option then Signalilo will
+take the Service State name (`ok`, `warning`, `critical`, or `unknown`) and suffix this to the
+Annotation name when looking up the Annotation to use for the Plugin Output (for example: `message_ok`).
+
+This allows you to configure multiple Annotations with different values that are then used
+with the corresponding Service State to set the Plugin Output.
+
+If an Annotation is not found for that specific Service State then Signalilo will fall back ot just using the Annotation name as configured.
 
 ## Integration with Icinga
 
