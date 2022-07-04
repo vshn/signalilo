@@ -13,7 +13,7 @@ jobs:
       IMAGE: docker.io/${{ github.repository }}
       QUAY_IMAGE: quay.io/${{ github.repository }}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: "0"
     - name: Set version latest
