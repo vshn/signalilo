@@ -63,7 +63,7 @@ Optional
   (default: false).
 * `--icinga_disable_keepalives`/`SIGNALILO_ICINGA_DISABLE_KEEPALIVES`:
   If true, disable http keep-alives with Icinga2 API and will only use
-  the connection to the server for a single HTTP request 
+  the connection to the server for a single HTTP request
   (default: false).
 * `--icinga_debug`/`SIGNALILO_ICINGA_DEBUG`:
   If true, enable debugging mode in Icinga client (default: false).
@@ -77,6 +77,16 @@ Optional
   (default 168h).
 * `--icinga_ca`/`SIGNALILO_ICINGA_CA`:
   A PEM string of the trusted CA certificate for the Icinga2 API certificate.
+* `--icinga_service_checks_active`/`SIGNALILO_ICINGA_SERVICE_CHECKS_ACTIVE`:
+  Use active checks for created icinga services to leverage on Alertmanager resend interval to manage stale checks (default: false).
+* `--icinga_service_checks_command`/`SIGNALILO_ICINGA_SERVICE_CHECKS_COMMAND`:
+  Name of the check command used in Icinga2 service creation (default: 'dummy').
+* `--icinga_service_checks_interval`/`SIGNALILO_ICINGA_SERVICE_CHECKS_INTERVAL`:
+  Interval (in seconds) to be used for icinga `check_interval` and `retry_interval`.
+  This should be set to a multiple of alertmanager `repeat_interval` in case
+  active checks are enabled (e.g. `1.1 < icinga_service_checks_interval/repeat_interval < 5`, default: 43200s).
+* `--icinga_service_max_check_attempts`/`SIGNALILO_ICINGA_SERVICE_MAX_CHECKS_ATTEMPTS`:
+  The maximum number of checks which are executed before changing to a hard state.
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:
   Port on which Signalilo listens to incoming webhooks (default 8888).
 * `--alertmanager_bearer_token`/`SIGNALILO_ALERTMANAGER_BEARER_TOKEN`:
@@ -93,7 +103,7 @@ Optional
   Enables support for dynamically selecting the Annotation name used for the Plugin Output based on the computed Service State.
   See [Plugin Output](#plugin-output) for more details on this option.
 * `--alertmanager_custom_severity_levels`/`SIGNALILO_ALERTMANAGER_CUSTOM_SEVERITY_LEVELS`:
-  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown. Can be set multiple times and you can also override the default values for the labels `warning` and `critical`. 
+  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown. Can be set multiple times and you can also override the default values for the labels `warning` and `critical`. The `severity` label is not case sensitive.
 
 The environment variable names are generated from the command-line flags. The flag is uppercased and all `-` characters are replaced with `_`. Signalilo uses the newline character `\n` to split flags that are allowed multiple times (like `SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`) into an array.
 
@@ -129,7 +139,7 @@ information, the check generated in Icinga will be lacking.
 
 Required labels:
 
-* `severity`: Must be one of `WARNING` or `CRITICAL`, or any values set via the `--alertmanager_custom_severity_levels` option.
+* `severity`: Must be one of `warning` or `critical`, or any values set via the `--alertmanager_custom_severity_levels` option.
 * `alertname` mapped to `display_name`.
 
 Required annotations:
@@ -167,6 +177,61 @@ If an Annotation is not found for that specific Service State then Signalilo wil
 
 ## Integration with Icinga
 
+### Icinga host
+
+You need to create an Icinga service host which Signalilo can use.
+Signalilo is designed to expect that it has full control over one service host in Icinga.
+Therefore you should create a service host for each Signalilo instance which you're running.
+
+Each service host should look as shown below.
+You can add additional configurations (such as host variables) as you like.
+
+```
+object Host "signalilo_cluster.example.com"  {
+  display_name = "Signalilo signalilo_cluster.example.com"
+  check_command = "dummy"
+  enable_passive_checks = false
+  enable_perfdata = false
+}
+```
+
+### Icinga API user
+
+We recommend that you create an API user per Icinga service host.
+This naturally ensures that you create an API user per Signalilo instance, since you should have a service host per Signalilo instance.
+In that case, you can restrict the API user's permissions to only interact with the service host belonging to the Signalilo instance as shown below.
+
+```
+object ApiUser "signalilo_cluster.example.com"  {
+  password = "verysecretpassword"
+  permissions = [
+  {
+    permission = "objects/query/*"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "objects/create/service"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "objects/modify/service"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "objects/delete/service"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  },
+  {
+    permission = "actions/process-check-result"
+    filter = {{ host.name == "signalilo_cluster.example.com" }}
+  }, ]
+}
+```
+
+Note that you don't have to use the same name for the API user as for its associated service host.
+However, you have to make sure that you compare `host.name` to the name of the service host for which the API user should have permissions.
+
+
 ### Garbage Collection
 
 Service objects in Icinga will get garbage collected (aka deleted) on a regular basis, following these rules:
@@ -182,12 +247,30 @@ All state needed for doing garbage collection is stored in Icinga service variab
 On startup, Signalilo checks if the matching heartbeat service is available in
 Icinga, otherwise it exits with a fatal error. During operation, Signalilo
 regularly posts its state to the heartbeat service.  If no state update was
-provided, Icinga automatically marks the check as UNKNOWN.  See [Icinga2
-passive checks][passive_checks] for a description of how the service object
-needs to be configured.
+provided, Icinga automatically marks the check as UNKNOWN.
 
-[passive_checks]: https://wiki.vshn.net/display/VT/Icinga2+passive+checks
-[webhook_format]: https://prometheus.io/docs/alerting/configuration/#webhook_config.
+You need to configure the following service in Icinga:
+
+```
+object Service "heartbeat" {
+  check_command = "dummy"
+  check_interval = 10s
+
+  /* Set the state to CRITICAL (2) if freshness checks fail. */
+  vars.dummy_state = 2
+
+  /* Use a runtime function to retrieve the last check time and more details. */
+  vars.dummy_text = {{
+    var service = get_service(macro("$host.name$"), macro("$service.name$"))
+    var lastCheck = DateTime(service.last_check).to_string()
+
+    return "No check results received. Last result time: " + lastCheck
+  }}
+
+  /* This must match the name of the host object for the Signalilo instance */
+  host_name = "signalilo_cluster.example.com"
+}
+```
 
 ### Custom Variables
 
@@ -230,3 +313,4 @@ heartbeat checks.
 
 
 [Go duration]: https://golang.org/pkg/time/#ParseDuration
+[webhook_format]: https://prometheus.io/docs/alerting/configuration/#webhook_config.

@@ -90,7 +90,7 @@ func severityToExitStatus(status string, severity string, severityLevels map[str
 	exitstatus := 3
 	if status == "firing" {
 		var ok bool
-		exitstatus, ok = severityLevels[severity]
+		exitstatus, ok = severityLevels[strings.ToLower(severity)]
 		if !ok {
 			exitstatus = 3
 		}
@@ -125,17 +125,18 @@ func createServiceData(hostname string,
 		Name:               serviceName,
 		DisplayName:        displayName,
 		HostName:           hostname,
-		CheckCommand:       "dummy",
-		EnableActiveChecks: false,
+		CheckCommand:       config.CheckCommand,
+		EnableActiveChecks: config.ActiveChecks,
 		Vars:               serviceVars,
 		Notes:              alert.Annotations["description"],
 		ActionURL:          alert.GeneratorURL,
 		NotesURL:           alert.Annotations["runbook_url"],
-		CheckInterval:      43200,
-		RetryInterval:      43200,
-		// We don't need soft states in Icinga, since the grace
-		// periods are already managed by Prometheus/Alertmanager
-		MaxCheckAttempts: 1,
+		CheckInterval:      config.ChecksInterval.Seconds(),
+		RetryInterval:      config.ChecksInterval.Seconds(),
+		// We don't usually need soft states in Icinga, since the grace
+		// periods are already managed by Prometheus/Alertmanager and relevant
+		// config parameter defaults to 1, but is still tunable for other usecases
+		MaxCheckAttempts: float64(config.MaxCheckAttempts),
 	}
 
 	// Check if this is a heartbeat service. Adjust serviceData

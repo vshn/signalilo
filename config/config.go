@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bketelsen/logr"
@@ -67,6 +68,10 @@ type SignaliloConfig struct {
 	StaticServiceVars    map[string]string
 	CustomSeverityLevels map[string]string
 	MergedSeverityLevels map[string]int
+	ActiveChecks         bool
+	ChecksInterval       time.Duration
+	CheckCommand         string
+	MaxCheckAttempts     int
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -102,7 +107,7 @@ func ConfigInitialize(configuration Configuration) {
 		if err != nil || l < 0 || l > 3 {
 			l = 3
 		}
-		allLevels[k] = int(l)
+		allLevels[strings.ToLower(k)] = int(l)
 	}
 	config.MergedSeverityLevels = allLevels
 
@@ -241,6 +246,10 @@ func NewMockConfiguration(verbosity int) Configuration {
 		LogLevel:          2,
 		KeepFor:           5 * time.Minute,
 		CAData:            "",
+		ActiveChecks:      false,
+		ChecksInterval:    12 * time.Hour,
+		CheckCommand:      "dummy",
+		MaxCheckAttempts:  1,
 	}
 	mockCfg := &MockConfiguration{
 		config: signaliloCfg,
