@@ -19,6 +19,10 @@ jobs:
     - name: Run image
       run: docker run --rm docker.io/vshn/signalilo:test --version
   test_go_get:
+    # Only run `go get` tests on PRs with source branch in
+    # github.com/vshn/signalilo, as go get will fail for PRs whose source
+    # branch is in a fork.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     strategy:
       matrix:
