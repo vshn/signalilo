@@ -14,6 +14,10 @@ jobs:
         fetch-depth: "0"
     - name: Build image
       run: make docker
+      env:
+        VERSION: test
+    - name: Run image
+      run: docker run --rm docker.io/vshn/signalilo:test --version
   test_go_get:
     runs-on: ubuntu-latest
     strategy:
