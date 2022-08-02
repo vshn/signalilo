@@ -1,6 +1,6 @@
 module github.com/vshn/signalilo
 
-go 1.16
+go 1.19
 
 require (
 	github.com/bketelsen/logr v0.0.0-20170116012416-f3d070bdd1c5
