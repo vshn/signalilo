@@ -48,7 +48,9 @@ Mandatory
 * `--icinga_hostname`/`SIGNALILO_ICINGA_HOSTNAME`:
   Name of the Servicehost in Icinga2.
 * `--icinga_url`/`SIGNALILO_ICINGA_URL`:
-  URL of the Icinga API.
+  URL of the Icinga API. It's possible to specify one or more URLs, if the parameter is repeated.
+  **Please keep in mind, if the URL is switched to another Icinga-URL instead of the Icinga-Config-Master, 
+ it can result in cluttered Icinga-Objects**
 * `--icinga_username`/`SIGNALILO_ICINGA_USERNAME`:
   Authentication against Icinga2 API.
 * `--icinga_password`/`SIGNALILO_ICINGA_PASSWORD`:

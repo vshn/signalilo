@@ -105,6 +105,17 @@ func (s *ServeCommand) startHeartbeat() error {
 		for ts := range s.heartbeatTicker.C {
 			if err := s.heartbeat(ts); err != nil {
 				s.logger.Errorf("sending heartbeat: %s", err)
+				// Tests all configured '--icinga_url' and sets the URL which doesn't responses with error
+				for _, url := range s.config.IcingaConfig.URL {
+					erro := s.icingaClient.TestIcingaApi(url)
+					if erro != nil {
+						continue
+					} else {
+						s.icingaClient.SetIcigaUrl(url)
+						s.logger.Infof("Switching to new Icinga-API-URL: %v", s.icingaClient.GetClientConfig().URL)
+						break
+					}
+				}
 			}
 		}
 	}()
@@ -173,7 +184,7 @@ func configureServeCommand(app *kingpin.Application) {
 
 	// Icinga2 client configuration
 	serve.Flag("icinga_hostname", "Icinga Servicehost Name").Envar("SIGNALILO_ICINGA_HOSTNAME").Required().StringVar(&s.config.HostName)
-	serve.Flag("icinga_url", "Icinga API URL").Envar("SIGNALILO_ICINGA_URL").Required().StringVar(&s.config.IcingaConfig.URL)
+	serve.Flag("icinga_url", "Icinga API URL (can be repeated)").Envar("SIGNALILO_ICINGA_URL").Required().StringsVar(&s.config.IcingaConfig.URL)
 	serve.Flag("icinga_username", "Icinga Username").Envar("SIGNALILO_ICINGA_USERNAME").Required().StringVar(&s.config.IcingaConfig.User)
 	serve.Flag("icinga_password", "Icinga Password").Envar("SIGNALILO_ICINGA_PASSWORD").Required().StringVar(&s.config.IcingaConfig.Password)
 	serve.Flag("icinga_insecure_tls", "Skip Icinga TLS verification").Envar("SIGNALILO_ICINGA_INSECURE_TLS").Default("false").BoolVar(&s.config.IcingaConfig.InsecureTLS)

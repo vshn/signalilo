@@ -26,7 +26,7 @@ import (
 )
 
 type icingaConfig struct {
-	URL               string
+	URL               []string
 	User              string
 	Password          string
 	InsecureTLS       bool
@@ -171,15 +171,25 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 		}
 	}
 
-	client, err := icinga2.New(icinga2.WebClient{
-		URL:               c.IcingaConfig.URL,
-		Username:          c.IcingaConfig.User,
-		Password:          c.IcingaConfig.Password,
-		Debug:             c.IcingaConfig.Debug,
-		DisableKeepAlives: c.IcingaConfig.DisableKeepAlives,
-		TLSConfig:         tlsConfig})
-	if err != nil {
-		return nil, err
+	var client *icinga2.WebClient
+
+	for _, url := range c.IcingaConfig.URL {
+		client, err = icinga2.New(icinga2.WebClient{
+			URL:               url,
+			Username:          c.IcingaConfig.User,
+			Password:          c.IcingaConfig.Password,
+			Debug:             c.IcingaConfig.Debug,
+			DisableKeepAlives: c.IcingaConfig.DisableKeepAlives,
+			TLSConfig:         tlsConfig})
+		if err != nil {
+			return nil, err
+		}
+
+		if err = client.TestIcingaApi(url); err != nil {
+			continue
+		} else {
+			break
+		}
 	}
 	return client, nil
 }
@@ -231,7 +241,7 @@ func NewMockConfiguration(verbosity int) Configuration {
 		UUID:     "",
 		HostName: "signalilo_appuio_lab",
 		IcingaConfig: icingaConfig{
-			URL:               "localhost:5665",
+			URL:               []string{"localhost:5665", "anotherhost:5665"},
 			User:              "sepp",
 			Password:          "sepp1",
 			InsecureTLS:       true,
