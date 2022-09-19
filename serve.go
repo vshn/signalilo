@@ -105,6 +105,15 @@ func (s *ServeCommand) startHeartbeat() error {
 		for ts := range s.heartbeatTicker.C {
 			if err := s.heartbeat(ts); err != nil {
 				s.logger.Errorf("sending heartbeat: %s", err)
+
+				// In some rare cases there could be an Icinga2 reload for a config update and the API is not reachable.
+				// So, the switch off of the Config-Master would take in place, but we don't want an unnecessary switch
+				// to the secondary Icinga2 instance.
+				if len(s.config.IcingaConfig.URL) > 1 {
+					s.logger.Infof("Waiting 5sec for retry connect")
+					time.Sleep(5 * time.Second)
+					continue
+				}
 				// Tests all configured '--icinga_url' and sets the URL which doesn't responses with error
 				for _, url := range s.config.IcingaConfig.URL {
 					erro := s.icingaClient.TestIcingaApi(url)
