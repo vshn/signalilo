@@ -173,6 +173,17 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 
 	var client *icinga2.WebClient
 
+	var tmp []string
+
+	for _, ur := range c.IcingaConfig.URL {
+		st := strings.Split(ur, ",")
+		for _, b := range st {
+			tmp = append(tmp, b)
+		}
+	}
+
+	c.IcingaConfig.URL = tmp
+
 	for _, url := range c.IcingaConfig.URL {
 		client, err = icinga2.New(icinga2.WebClient{
 			URL:               url,
@@ -210,9 +221,10 @@ func MockLogger(verbosity int) logr.Logger {
 }
 
 type MockConfiguration struct {
-	config       SignaliloConfig
-	logger       logr.Logger
-	icingaClient icinga2.Client
+	config          SignaliloConfig
+	logger          logr.Logger
+	icingaClient    icinga2.Client
+	icingaWebclient icinga2.WebClient
 }
 
 func (c *MockConfiguration) GetConfig() *SignaliloConfig {
@@ -232,6 +244,18 @@ func (c *MockConfiguration) SetLogger(logger logr.Logger) {
 }
 func (c *MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
 	c.icingaClient = icinga
+}
+
+func (c *MockConfiguration) SetIcigaUrl(url string) {
+	c.icingaWebclient.URL = url
+}
+
+func (c *MockConfiguration) GetClientConfig() icinga2.WebClient {
+	return c.icingaWebclient.GetClientConfig()
+}
+
+func (c *MockConfiguration) TestIcingaApi() error {
+	return nil
 }
 
 func NewMockConfiguration(verbosity int) Configuration {

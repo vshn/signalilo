@@ -12,6 +12,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bketelsen/logr"
@@ -102,6 +103,16 @@ func (s *ServeCommand) startHeartbeat() error {
 		if err != nil {
 			s.logger.Errorf("Unable to send initial heartbeat: %v", err)
 		}
+
+		var tmp []string
+		for _, ur := range s.config.IcingaConfig.URL {
+			st := strings.Split(ur, ",")
+			for _, b := range st {
+				tmp = append(tmp, b)
+			}
+		}
+		s.config.IcingaConfig.URL = tmp
+
 		for ts := range s.heartbeatTicker.C {
 			if err := s.heartbeat(ts); err != nil {
 				s.logger.Errorf("sending heartbeat: %s", err)
@@ -109,22 +120,33 @@ func (s *ServeCommand) startHeartbeat() error {
 				// In some rare cases there could be an Icinga2 reload for a config update and the API is not reachable.
 				// So, the switch off of the Config-Master would take in place, but we don't want an unnecessary switch
 				// to the secondary Icinga2 instance.
-				if len(s.config.IcingaConfig.URL) > 1 {
-					s.logger.Infof("Waiting 5sec for retry connect")
-					time.Sleep(5 * time.Second)
+				s.logger.Infof("Waiting 5sec for reconnect")
+				time.Sleep(5 * time.Second)
+				erro := s.icingaClient.TestIcingaApi(s.icingaClient.GetClientConfig().URL)
+
+				if erro != nil {
+					// Tests all configured '--icinga_url' and sets the URL which doesn't responses with error
+					for _, url := range s.config.IcingaConfig.URL {
+						erri := s.icingaClient.TestIcingaApi(url)
+
+						if erri == nil {
+							s.logger.Infof("Switching to new Icinga-API-URL: %v", url)
+							s.icingaClient.SetIcingaUrl(url)
+							break
+						}
+					}
+				} else {
+					s.logger.Infof("Reconnect successful: %v", s.icingaClient.GetClientConfig().URL)
 					continue
 				}
-				// Tests all configured '--icinga_url' and sets the URL which doesn't responses with error
-				for _, url := range s.config.IcingaConfig.URL {
-					erro := s.icingaClient.TestIcingaApi(url)
-					if erro != nil {
-						continue
-					} else {
-						s.icingaClient.SetIcigaUrl(url)
-						s.logger.Infof("Switching to new Icinga-API-URL: %v", s.icingaClient.GetClientConfig().URL)
-						break
-					}
-				}
+			}
+
+			erro := s.icingaClient.TestIcingaApi(s.config.IcingaConfig.URL[0])
+			if (s.icingaClient.GetClientConfig().URL != s.config.IcingaConfig.URL[0]) && erro == nil {
+				// If all URLs are accessible, switch to the 'first one', it's the Icinga-Config-Master per default
+				s.logger.Infof("Connecting to Icinga-Config-Master: %v", s.config.IcingaConfig.URL[0])
+				s.icingaClient.SetIcingaUrl(s.config.IcingaConfig.URL[0])
+				continue
 			}
 		}
 	}()
@@ -153,6 +175,7 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 
 	s.logger.Infof("Signalilo UUID: %v", s.GetConfig().UUID)
 	s.logger.Infof("Keep for: %v", s.GetConfig().KeepFor)
+	s.logger.Infof("Icinga API: %s", s.GetIcingaClient().GetClientConfig().URL)
 
 	if err := s.startHeartbeat(); err != nil {
 		return err
