@@ -72,6 +72,7 @@ type SignaliloConfig struct {
 	ChecksInterval       time.Duration
 	CheckCommand         string
 	MaxCheckAttempts     int
+	Reconnect            time.Duration
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -83,6 +84,18 @@ func ConfigInitialize(configuration Configuration) {
 	configuration.SetLogger(NewLogger(config.LogLevel))
 	// Refresh local reference to logger after setup
 	l = configuration.GetLogger()
+
+	var tmp []string
+
+	for _, ur := range config.IcingaConfig.URL {
+		st := strings.Split(ur, ",")
+		for _, b := range st {
+			tmp = append(tmp, b)
+		}
+	}
+
+	config.IcingaConfig.URL = tmp
+
 	icinga, err := newIcingaClient(config, l)
 	if err != nil {
 		l.Errorf("Unable to create new icinga client: %s", err)
@@ -173,17 +186,6 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 
 	var client *icinga2.WebClient
 
-	var tmp []string
-
-	for _, ur := range c.IcingaConfig.URL {
-		st := strings.Split(ur, ",")
-		for _, b := range st {
-			tmp = append(tmp, b)
-		}
-	}
-
-	c.IcingaConfig.URL = tmp
-
 	for _, url := range c.IcingaConfig.URL {
 		client, err = icinga2.New(icinga2.WebClient{
 			URL:               url,
@@ -195,12 +197,16 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 		if err != nil {
 			return nil, err
 		}
-
 		if err = client.TestIcingaApi(url); err != nil {
+			// clear client if the API url wasn't reachable
+			client = nil
 			continue
 		} else {
 			break
 		}
+	}
+	if client == nil {
+		return nil, fmt.Errorf("no valid Icinga API URL found")
 	}
 	return client, nil
 }
@@ -221,10 +227,9 @@ func MockLogger(verbosity int) logr.Logger {
 }
 
 type MockConfiguration struct {
-	config          SignaliloConfig
-	logger          logr.Logger
-	icingaClient    icinga2.Client
-	icingaWebclient icinga2.WebClient
+	config       SignaliloConfig
+	logger       logr.Logger
+	icingaClient icinga2.Client
 }
 
 func (c *MockConfiguration) GetConfig() *SignaliloConfig {
@@ -244,14 +249,6 @@ func (c *MockConfiguration) SetLogger(logger logr.Logger) {
 }
 func (c *MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
 	c.icingaClient = icinga
-}
-
-func (c *MockConfiguration) SetIcigaUrl(url string) {
-	c.icingaWebclient.URL = url
-}
-
-func (c *MockConfiguration) GetClientConfig() icinga2.WebClient {
-	return c.icingaWebclient.GetClientConfig()
 }
 
 func (c *MockConfiguration) TestIcingaApi() error {

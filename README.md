@@ -48,9 +48,9 @@ Mandatory
 * `--icinga_hostname`/`SIGNALILO_ICINGA_HOSTNAME`:
   Name of the Servicehost in Icinga2.
 * `--icinga_url`/`SIGNALILO_ICINGA_URL`:
-  URL of the Icinga API. It's possible to specify one or more URLs. Via CLI, the parameter can be repeated. If the
-  Parameter is used as ENV, the URLs will be splittet via comma e.G.: `"http://example.com:5665,http://example2.com:5665"`.
-  Please keep in mind, the first URL will be the Icinga-Config-Master
+  URL of the Icinga API. It's possible to specify one or more URLs. Via CLI, the parameter can be repeated. 
+  If the Parameter is used as ENV, the content will be split on commas, e.g. `"http://example.com:5665,http://example2.com:5665"` will configure two masters at `http://example.com:5665` and `http://example2.com:5665`.
+  Please keep in mind that the first URL will be the Icinga-Config-Master.
 * `--icinga_username`/`SIGNALILO_ICINGA_USERNAME`:
   Authentication against Icinga2 API.
 * `--icinga_password`/`SIGNALILO_ICINGA_PASSWORD`:
