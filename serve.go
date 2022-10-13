@@ -110,8 +110,11 @@ func (s *ServeCommand) startHeartbeat() error {
 				// In some rare cases there could be an Icinga2 reload for a config update and the API is not reachable.
 				// So, the switch off of the Config-Master would take in place, but we don't want an unnecessary switch
 				// to the secondary Icinga2 instance.
-				s.logger.Infof("Waiting %s for reconnect", s.config.Reconnect)
-				time.Sleep(s.config.Reconnect)
+				if s.config.Reconnect > 0 {
+					s.logger.Infof("Waiting %s for reconnect", s.config.Reconnect)
+					time.Sleep(s.config.Reconnect)
+				}
+
 				erro := s.icingaClient.TestIcingaApi(s.icingaClient.GetClientConfig().URL)
 
 				if erro != nil {
@@ -222,7 +225,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_service_checks_interval", "Interval (in seconds) to be used for icinga check_interval and retry_interval").Envar("SIGNALILO_ICINGA_SERVICE_CHECKS_INTERVAL").Default("12h").DurationVar(&s.config.ChecksInterval)
 	serve.Flag("icinga_service_max_check_attempts", "The maximum number of checks which are executed before changing to a hard state").Envar("SIGNALILO_ICINGA_SERVICE_MAX_CHECK_ATTEMPTS").Default("1").IntVar(&s.config.MaxCheckAttempts)
 	serve.Flag("icinga_static_service_var", "A variable to be set on each Icinga service created by Signalilo. The expected format is variable=value. Can be repeated.").Envar("SIGNALILO_ICINGA_STATIC_SERVICE_VAR").StringMapVar(&s.config.StaticServiceVars)
-	serve.Flag("icinga_reconnect", "Interval to be used for Signalilo to wait for a reconnect instead of switching immediately to another URL").Envar("SIGNALILO_ICINGA_RECONNECT").Default("10s").DurationVar(&s.config.Reconnect)
+	serve.Flag("icinga_reconnect", "If it's set, Signalilo to waits for a reconnect instead of switching immediately to another URL.").Envar("SIGNALILO_ICINGA_RECONNECT").Default("0").DurationVar(&s.config.Reconnect)
 
 	// Alert manager configuration
 	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)
