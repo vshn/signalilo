@@ -48,8 +48,8 @@ Mandatory
 * `--icinga_hostname`/`SIGNALILO_ICINGA_HOSTNAME`:
   Name of the Servicehost in Icinga2.
 * `--icinga_url`/`SIGNALILO_ICINGA_URL`:
-  URL of the Icinga API. It's possible to specify one or more URLs. Via CLI, the parameter can be repeated. 
-  If the Parameter is used as ENV, the content will be split on commas, e.g. `"http://example.com:5665,http://example2.com:5665"` will configure two masters at `http://example.com:5665` and `http://example2.com:5665`.
+  URL of the Icinga API. It's possible to specify one or more URLs. 
+  The Parameter content will be split on newline character `\n`, e.g. `"http://example.com:5665\nhttp://example2.com:5665"` will configure two masters at `http://example.com:5665` and `http://example2.com:5665`.
   Please keep in mind that the first URL will be the Icinga-Config-Master.
 * `--icinga_username`/`SIGNALILO_ICINGA_USERNAME`:
   Authentication against Icinga2 API.
@@ -90,6 +90,8 @@ Optional
   active checks are enabled (e.g. `1.1 < icinga_service_checks_interval/repeat_interval < 5`, default: 43200s).
 * `--icinga_service_max_check_attempts`/`SIGNALILO_ICINGA_SERVICE_MAX_CHECKS_ATTEMPTS`:
   The maximum number of checks which are executed before changing to a hard state.
+* `--icinga_reconnect`/`SIGNALILO_ICINGA_RECONNECT`:
+  If it's set, Signalilo to waits for a reconnect instead of switching immediately to another URL.
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:
   Port on which Signalilo listens to incoming webhooks (default 8888).
 * `--alertmanager_bearer_token`/`SIGNALILO_ALERTMANAGER_BEARER_TOKEN`:

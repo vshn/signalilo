@@ -85,17 +85,6 @@ func ConfigInitialize(configuration Configuration) {
 	// Refresh local reference to logger after setup
 	l = configuration.GetLogger()
 
-	var tmp []string
-
-	for _, ur := range config.IcingaConfig.URL {
-		st := strings.Split(ur, ",")
-		for _, b := range st {
-			tmp = append(tmp, b)
-		}
-	}
-
-	config.IcingaConfig.URL = tmp
-
 	icinga, err := newIcingaClient(config, l)
 	if err != nil {
 		l.Errorf("Unable to create new icinga client: %s", err)
@@ -249,10 +238,6 @@ func (c *MockConfiguration) SetLogger(logger logr.Logger) {
 }
 func (c *MockConfiguration) SetIcingaClient(icinga icinga2.Client) {
 	c.icingaClient = icinga
-}
-
-func (c *MockConfiguration) TestIcingaApi() error {
-	return nil
 }
 
 func NewMockConfiguration(verbosity int) Configuration {
