@@ -115,17 +115,19 @@ func (s *ServeCommand) startHeartbeat() error {
 					time.Sleep(s.config.Reconnect)
 				}
 
-				erro := s.icingaClient.TestIcingaApi(s.icingaClient.GetClientConfig().URL)
+				erro := s.icingaClient.TestIcingaApi()
 
 				if erro != nil {
 					// Tests all configured '--icinga_url' and sets the URL which doesn't respond with error
 					for _, url := range s.config.IcingaConfig.URL {
-						erri := s.icingaClient.TestIcingaApi(url)
+						s.icingaClient.SetIcingaUrl(url)
+						erri := s.icingaClient.TestIcingaApi()
 
 						if erri == nil {
 							s.logger.Infof("Switching to new Icinga-API-URL: %v", url)
-							s.icingaClient.SetIcingaUrl(url)
 							break
+						} else {
+							continue
 						}
 					}
 				} else {
@@ -134,12 +136,21 @@ func (s *ServeCommand) startHeartbeat() error {
 				}
 			}
 
-			erro := s.icingaClient.TestIcingaApi(s.config.IcingaConfig.URL[0])
-			if (s.icingaClient.GetClientConfig().URL != s.config.IcingaConfig.URL[0]) && erro == nil {
-				// If all URLs are accessible, switch to the 'first one', it's the Icinga-Config-Master per default
-				s.logger.Infof("Connecting to Icinga-Config-Master: %v", s.config.IcingaConfig.URL[0])
+			if s.icingaClient.GetClientConfig().URL != s.config.IcingaConfig.URL[0] {
+				// If the first URL is accessible, switch to the 'first one', it's the Icinga-Config-Master per default
+				oldUrl := s.icingaClient.GetClientConfig().URL
+
 				s.icingaClient.SetIcingaUrl(s.config.IcingaConfig.URL[0])
-				continue
+
+				erro := s.icingaClient.TestIcingaApi()
+
+				if erro != nil {
+					s.icingaClient.SetIcingaUrl(oldUrl)
+					continue
+				} else {
+					s.logger.Infof("Connecting to Icinga-Config-Master: %v", s.config.IcingaConfig.URL[0])
+					continue
+				}
 			}
 		}
 	}()

@@ -186,7 +186,7 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 		if err != nil {
 			return nil, err
 		}
-		if err = client.TestIcingaApi(url); err != nil {
+		if err = client.TestIcingaApi(); err != nil {
 			// clear client if the API url wasn't reachable
 			client = nil
 			continue
