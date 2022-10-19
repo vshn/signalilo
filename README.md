@@ -61,33 +61,26 @@ Optional
 * `--loglevel`/`SIGNALILO_LOG_LEVEL`:
   Integer to control verbosity of logging (default: 2).
 * `--icinga_insecure_tls`/`SIGNALILO_ICINGA_INSECURE_TLS`:
-  If true, disable strict TLS checking of Icinga2 API SSL certificate
-  (default: false).
+  If true, disable strict TLS checking of Icinga2 API SSL certificate (default: false).
 * `--icinga_disable_keepalives`/`SIGNALILO_ICINGA_DISABLE_KEEPALIVES`:
-  If true, disable http keep-alives with Icinga2 API and will only use
-  the connection to the server for a single HTTP request
-  (default: false).
+  If true, disable http keep-alives with Icinga2 API and will only use the connection to the server for a single HTTP request (default: false).
 * `--icinga_debug`/`SIGNALILO_ICINGA_DEBUG`:
   If true, enable debugging mode in Icinga client (default: false).
 * `--icinga_gc_interval`/`SIGNALILO_ICINGA_GC_INTERVAL`:
-  Interval to run Garbage collection of recovered alerts in Icinga
-  (default 15m).
+  Interval to run Garbage collection of recovered alerts in Icinga (default 15m).
 * `--icinga_heartbeat_interval`/`SIGNALILO_ICINGA_HEARTBEAT_INTERVAL`:
   Interval to send heartbeat to Icinga (default 60s).
 * `--icinga_keep_for`/`SIGNALILO_ICINGA_KEEP_FOR`:
-  How long to keep Icinga2 services around after they transition to state OK
-  (default 168h).
+  How long to keep Icinga2 services around after they transition to state OK (default 168h).
 * `--icinga_ca`/`SIGNALILO_ICINGA_CA`:
   A PEM string of the trusted CA certificate for the Icinga2 API certificate.
 * `--icinga_service_checks_active`/`SIGNALILO_ICINGA_SERVICE_CHECKS_ACTIVE`:
-  Use active checks for created icinga services to leverage on Alertmanager resend interval to manage stale checks (
-  default: false).
+  Use active checks for created icinga services to leverage on Alertmanager resend interval to manage stale checks (default: false).
 * `--icinga_service_checks_command`/`SIGNALILO_ICINGA_SERVICE_CHECKS_COMMAND`:
   Name of the check command used in Icinga2 service creation (default: 'dummy').
 * `--icinga_service_checks_interval`/`SIGNALILO_ICINGA_SERVICE_CHECKS_INTERVAL`:
   Interval (in seconds) to be used for icinga `check_interval` and `retry_interval`.
-  This should be set to a multiple of alertmanager `repeat_interval` in case
-  active checks are enabled (e.g. `1.1 < icinga_service_checks_interval/repeat_interval < 5`, default: 43200s).
+  This should be set to a multiple of alertmanager `repeat_interval` in case active checks are enabled (e.g. `1.1 < icinga_service_checks_interval/repeat_interval < 5`, default: 43200s).
 * `--icinga_service_max_check_attempts`/`SIGNALILO_ICINGA_SERVICE_MAX_CHECKS_ATTEMPTS`:
   The maximum number of checks which are executed before changing to a hard state.
 * `--icinga_reconnect`/`SIGNALILO_ICINGA_RECONNECT`:
@@ -97,33 +90,29 @@ Optional
 * `--alertmanager_bearer_token`/`SIGNALILO_ALERTMANAGER_BEARER_TOKEN`:
   Incoming webhook authentication. Can be either set via `Authorization` header or in the `token` URL query parameter.
 * `--alertmanager_tls_cert`/`SIGNALILO_ALERTMANAGER_TLS_CERT`:
-  Path of certificate file for TLS-enabled webhook endpoint. Should contain the
-  full chain.
+  Path of certificate file for TLS-enabled webhook endpoint. Should contain the full chain.
 * `--alertmanager_tls_key`/`SIGNALILO_ALERTMANAGER_TLS_KEY`:
-  Path of private key file for TLS-enabled webhook endpoint. TLS is enabled
-  when both TLS_CERT and TLS_KEY are set.
+  Path of private key file for TLS-enabled webhook endpoint. TLS is enabled when both `TLS_CERT` and `TLS_KEY` are set.
 * `--alertmanager_pluginoutput_annotations`/`SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`:
-  The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first
-  annotation with a value found is used.
+  The name of an annotation to retrieve the `plugin_output` from. Can be set multiple times in which case the first annotation with a value found is used.
 * `--alertmanager_pluginoutput_by_states`/`SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_BY_STATES`:
-  Enables support for dynamically selecting the Annotation name used for the Plugin Output based on the computed Service
-  State.
+  Enables support for dynamically selecting the Annotation name used for the Plugin Output based on the computed Service State.
   See [Plugin Output](#plugin-output) for more details on this option.
 * `--alertmanager_custom_severity_levels`/`SIGNALILO_ALERTMANAGER_CUSTOM_SEVERITY_LEVELS`:
-  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State. Use the
-  format `label_name=service_state`. The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3`
-  for Unknown. Can be set multiple times and you can also override the default values for the labels `warning`
-  and `critical`. The `severity` label is not case-sensitive.
+  Add or override the default mapping of the `severity` label of the Alert to an Icinga Service State.
+  Use the format `label_name=service_state`.
+  The `service_state` can be `0` for OK, `1` for Warning, `2` for Critical, and `3` for Unknown.
+  Can be set multiple times and you can also override the default values for the labels `warning` and `critical`.
+  The `severity` label is not case-sensitive.
 
-The environment variable names are generated from the command-line flags. The flag is uppercased and all `-` characters
-are replaced with `_`. Signalilo uses the newline character `\n` to split flags that are allowed multiple times (
-like `SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`) into an array.
+The environment variable names are generated from the command-line flags.
+The flag is uppercased and all `-` characters are replaced with `_`.
+Signalilo uses the newline character `\n` to split flags that are allowed multiple times (like `SIGNALILO_ALERTMANAGER_PLUGINOUTPUT_ANNOTATIONS`) into an array.
 
 ## Integration to Prometheus/Alertmanager.
 
 The `/webhook` accepts alerts in the [format of Alertmanager][webhook_format].
-The following Alertmanager configuration is an example taken from a Signalilo
-installation on OpenShift.
+The following Alertmanager configuration is an example taken from a Signalilo installation on OpenShift.
 
     global:
       resolve_timeout: 5m
@@ -146,13 +135,12 @@ installation on OpenShift.
         url: http://signalilo.appuio-monitoring/webhook
     - name: deadmansswitch
 
-Signalilo requires a set of information to be part of an alert. Without this
-information, the check generated in Icinga will be lacking.
+Signalilo requires a set of information to be part of an alert.
+Without this information, the check generated in Icinga will be lacking.
 
 Required labels:
 
-* `severity`: Must be one of `warning` or `critical`, or any values set via the `--alertmanager_custom_severity_levels`
-  option.
+* `severity`: Must be one of `warning` or `critical`, or any values set via the `--alertmanager_custom_severity_levels` option.
 * `alertname` mapped to `display_name`.
 
 Required annotations:
@@ -160,8 +148,7 @@ Required annotations:
 * `description`: mapped to `notes`.
 * `message`: mapped to `plugin_output`.
 
-You can also use the `--alertmanager_pluginoutput_annotations` option to change
-the Annotation used for the `plugin_output` as well as the `--alertmanager_pluginoutput_by_states` option.
+You can also use the `--alertmanager_pluginoutput_annotations` option to change the Annotation used for the `plugin_output` as well as the `--alertmanager_pluginoutput_by_states` option.
 See [Plugin Output](#plugin-output) for more details.
 
 Optional annotations:
@@ -176,18 +163,13 @@ Infered fields:
 
 By default, Signalilo will use the `message` Annotation to set the `plugin_output` in the Icinga Service.
 
-This can be changed by using the `--alertmanager_pluginoutput_annotations` to select either a
-different Annotation or to provide a list of Annotations where the first one with a value will be used.
+This can be changed by using the `--alertmanager_pluginoutput_annotations` to select either a different Annotation or to provide a list of Annotations where the first one with a value will be used.
 
-Alternatively if you enable the `--alertmanager_pluginoutput_by_states` option then Signalilo will
-take the Service State name (`ok`, `warning`, `critical`, or `unknown`) and suffix this to the
-Annotation name when looking up the Annotation to use for the Plugin Output (for example: `message_ok`).
+Alternatively if you enable the `--alertmanager_pluginoutput_by_states` option then Signalilo will take the Service State name (`ok`, `warning`, `critical`, or `unknown`) and suffix this to the Annotation name when looking up the Annotation to use for the Plugin Output (for example: `message_ok`).
 
-This allows you to configure multiple Annotations with different values that are then used
-with the corresponding Service State to set the Plugin Output.
+This allows you to configure multiple Annotations with different values that are then used with the corresponding Service State to set the Plugin Output.
 
-If an Annotation is not found for that specific Service State then Signalilo will fall back ot just using the Annotation
-name as configured.
+If an Annotation is not found for that specific Service State then Signalilo will fall back ot just using the Annotation name as configured.
 
 ## Integration with Icinga
 
@@ -212,10 +194,8 @@ object Host "signalilo_cluster.example.com"  {
 ### Icinga API user
 
 We recommend that you create an API user per Icinga service host.
-This naturally ensures that you create an API user per Signalilo instance, since you should have a service host per
-Signalilo instance.
-In that case, you can restrict the API user's permissions to only interact with the service host belonging to the
-Signalilo instance as shown below.
+This naturally ensures that you create an API user per Signalilo instance, since you should have a service host per Signalilo instance.
+In that case, you can restrict the API user's permissions to only interact with the service host belonging to the Signalilo instance as shown below.
 
 ```
 object ApiUser "signalilo_cluster.example.com"  {
@@ -245,8 +225,7 @@ object ApiUser "signalilo_cluster.example.com"  {
 ```
 
 Note that you don't have to use the same name for the API user as for its associated service host.
-However, you have to make sure that you compare `host.name` to the name of the service host for which the API user
-should have permissions.
+However, you have to make sure that you compare `host.name` to the name of the service host for which the API user should have permissions.
 
 ### Garbage Collection
 
@@ -260,10 +239,9 @@ All state needed for doing garbage collection is stored in Icinga service variab
 
 ### Signalilo Heartbeat
 
-On startup, Signalilo checks if the matching heartbeat service is available in
-Icinga, otherwise it exits with a fatal error. During operation, Signalilo
-regularly posts its state to the heartbeat service. If no state update was
-provided, Icinga automatically marks the check as UNKNOWN.
+On startup, Signalilo checks if the matching heartbeat service is available in Icinga, otherwise it exits with a fatal error.
+During operation, Signalilo regularly posts its state to the heartbeat service.
+If no state update was provided, Icinga automatically marks the check as UNKNOWN.
 
 You need to configure the following service in Icinga:
 
@@ -290,14 +268,12 @@ object Service "heartbeat" {
 
 ### Custom Variables
 
-All labels and annotations will be mapped to custom variables. Keys of Labels
-will be prefixed with `label_` and keys of annotations with `annotation_`.
+All labels and annotations will be mapped to custom variables.
+Keys of Labels will be prefixed with `label_` and keys of annotations with `annotation_`.
 
-If the key an annotation or label starts with `icinga_` it will also be added
-as custom variable but without any prefix. Since all labels and annotations
-will be strings, a type information needs to be provided so that a conversion
-can be done accordingly. This is done by adding the type as part of the prefix
-(`icinga_<type>_`). Current supported types are `number` and `string`.
+If the key an annotation or label starts with `icinga_` it will also be added as custom variable but without any prefix.
+Since all labels and annotations will be strings, a type information needs to be provided so that a conversion can be done accordingly.
+This is done by adding the type as part of the prefix (`icinga_<type>_`). Current supported types are `number` and `string`.
 
 Examples:
 
@@ -307,25 +283,18 @@ Examples:
 * `icinga_number_bar` -> label/annotation named `bar` with its value is
   converted to an integer number.
 
-In case there is a label and an annotation with the `icinga_<type>` prefix, the
-value of the annotation will take precedence in the resulting set of custom
-variables.
+In case there is a label and an annotation with the `icinga_<type>` prefix, the value of the annotation will take precedence in the resulting set of custom variables.
 
 ### Heartbeat Services
 
-Signalilo supports creating heartbeat services in Icinga. This can be used to
-map alerts like the `DeadMansSwitch` which comes with `prometheus-operator`
-and signals that the whole Prometheus stack is healthy.
+Signalilo supports creating heartbeat services in Icinga.
+This can be used to map alerts like the `DeadMansSwitch` which comes with `prometheus-operator` and signals that the whole Prometheus stack is healthy.
 
-In order for Signalilo to treat an alert as a heartbeat, the alert must have
-a label `heartbeat`. Signalilo will try to parse the value of that label as a
-[Go duration].
+In order for Signalilo to treat an alert as a heartbeat, the alert must have a label `heartbeat`.
+Signalilo will try to parse the value of that label as a [Go duration].
 
-If the value is parsed successfully, Signalilo will create an Icinga service
-check with active checks enabled and with the check interval set to the
-parsed duration plus ten percent. We add ten percent to the parsed duration
-to account for network latencies etc., which could otherwise lead to flapping
-heartbeat checks.
+If the value is parsed successfully, Signalilo will create an Icinga service check with active checks enabled and with the check interval set to the parsed duration plus ten percent.
+We add ten percent to the parsed duration to account for network latencies etc., which could otherwise lead to flapping heartbeat checks.
 
 
 [Go duration]: https://golang.org/pkg/time/#ParseDuration
