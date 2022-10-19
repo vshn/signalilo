@@ -26,7 +26,7 @@ import (
 )
 
 type icingaConfig struct {
-	URL               string
+	URL               []string
 	User              string
 	Password          string
 	InsecureTLS       bool
@@ -72,6 +72,7 @@ type SignaliloConfig struct {
 	ChecksInterval       time.Duration
 	CheckCommand         string
 	MaxCheckAttempts     int
+	Reconnect            time.Duration
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -83,6 +84,7 @@ func ConfigInitialize(configuration Configuration) {
 	configuration.SetLogger(NewLogger(config.LogLevel))
 	// Refresh local reference to logger after setup
 	l = configuration.GetLogger()
+
 	icinga, err := newIcingaClient(config, l)
 	if err != nil {
 		l.Errorf("Unable to create new icinga client: %s", err)
@@ -171,15 +173,29 @@ func newIcingaClient(c *SignaliloConfig, l logr.Logger) (icinga2.Client, error) 
 		}
 	}
 
-	client, err := icinga2.New(icinga2.WebClient{
-		URL:               c.IcingaConfig.URL,
-		Username:          c.IcingaConfig.User,
-		Password:          c.IcingaConfig.Password,
-		Debug:             c.IcingaConfig.Debug,
-		DisableKeepAlives: c.IcingaConfig.DisableKeepAlives,
-		TLSConfig:         tlsConfig})
-	if err != nil {
-		return nil, err
+	var client *icinga2.WebClient
+
+	for _, url := range c.IcingaConfig.URL {
+		client, err = icinga2.New(icinga2.WebClient{
+			URL:               url,
+			Username:          c.IcingaConfig.User,
+			Password:          c.IcingaConfig.Password,
+			Debug:             c.IcingaConfig.Debug,
+			DisableKeepAlives: c.IcingaConfig.DisableKeepAlives,
+			TLSConfig:         tlsConfig})
+		if err != nil {
+			return nil, err
+		}
+		if err = client.TestIcingaApi(); err != nil {
+			// clear client if the API url wasn't reachable
+			client = nil
+			continue
+		} else {
+			break
+		}
+	}
+	if client == nil {
+		return nil, fmt.Errorf("no valid Icinga API URL found")
 	}
 	return client, nil
 }
@@ -231,7 +247,7 @@ func NewMockConfiguration(verbosity int) Configuration {
 		UUID:     "",
 		HostName: "signalilo_appuio_lab",
 		IcingaConfig: icingaConfig{
-			URL:               "localhost:5665",
+			URL:               []string{"localhost:5665", "anotherhost:5665"},
 			User:              "sepp",
 			Password:          "sepp1",
 			InsecureTLS:       true,

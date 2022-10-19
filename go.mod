@@ -8,6 +8,6 @@ require (
 	github.com/prometheus/alertmanager v0.24.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.7.4
-	github.com/vshn/go-icinga2-client v0.0.15
+	github.com/vshn/go-icinga2-client v0.0.16
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

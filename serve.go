@@ -102,9 +102,55 @@ func (s *ServeCommand) startHeartbeat() error {
 		if err != nil {
 			s.logger.Errorf("Unable to send initial heartbeat: %v", err)
 		}
+
 		for ts := range s.heartbeatTicker.C {
 			if err := s.heartbeat(ts); err != nil {
 				s.logger.Errorf("sending heartbeat: %s", err)
+
+				// In some rare cases there could be an Icinga2 reload for a config update and the API is not reachable.
+				// So, the switch off of the Config-Master would take in place, but we don't want an unnecessary switch
+				// to the secondary Icinga2 instance.
+				if s.config.Reconnect > 0 {
+					s.logger.Infof("Waiting %s for reconnect", s.config.Reconnect)
+					time.Sleep(s.config.Reconnect)
+				}
+
+				erro := s.icingaClient.TestIcingaApi()
+
+				if erro != nil {
+					// Tests all configured '--icinga_url' and sets the URL which doesn't respond with error
+					for _, url := range s.config.IcingaConfig.URL {
+						s.icingaClient.SetIcingaUrl(url)
+						erri := s.icingaClient.TestIcingaApi()
+
+						if erri == nil {
+							s.logger.Infof("Switching to new Icinga-API-URL: %v", url)
+							break
+						} else {
+							continue
+						}
+					}
+				} else {
+					s.logger.Infof("Reconnect successful: %v", s.icingaClient.GetClientConfig().URL)
+					continue
+				}
+			}
+
+			if s.icingaClient.GetClientConfig().URL != s.config.IcingaConfig.URL[0] {
+				// If the first URL is accessible, switch to the 'first one', it's the Icinga-Config-Master per default
+				oldUrl := s.icingaClient.GetClientConfig().URL
+
+				s.icingaClient.SetIcingaUrl(s.config.IcingaConfig.URL[0])
+
+				erro := s.icingaClient.TestIcingaApi()
+
+				if erro != nil {
+					s.icingaClient.SetIcingaUrl(oldUrl)
+					continue
+				} else {
+					s.logger.Infof("Connecting to Icinga-Config-Master: %v", s.config.IcingaConfig.URL[0])
+					continue
+				}
 			}
 		}
 	}()
@@ -133,6 +179,7 @@ func (s *ServeCommand) run(ctx *kingpin.ParseContext) error {
 
 	s.logger.Infof("Signalilo UUID: %v", s.GetConfig().UUID)
 	s.logger.Infof("Keep for: %v", s.GetConfig().KeepFor)
+	s.logger.Infof("Icinga API: %s", s.GetIcingaClient().GetClientConfig().URL)
 
 	if err := s.startHeartbeat(); err != nil {
 		return err
@@ -173,7 +220,7 @@ func configureServeCommand(app *kingpin.Application) {
 
 	// Icinga2 client configuration
 	serve.Flag("icinga_hostname", "Icinga Servicehost Name").Envar("SIGNALILO_ICINGA_HOSTNAME").Required().StringVar(&s.config.HostName)
-	serve.Flag("icinga_url", "Icinga API URL").Envar("SIGNALILO_ICINGA_URL").Required().StringVar(&s.config.IcingaConfig.URL)
+	serve.Flag("icinga_url", "Icinga API URL (can be repeated)").Envar("SIGNALILO_ICINGA_URL").Required().StringsVar(&s.config.IcingaConfig.URL)
 	serve.Flag("icinga_username", "Icinga Username").Envar("SIGNALILO_ICINGA_USERNAME").Required().StringVar(&s.config.IcingaConfig.User)
 	serve.Flag("icinga_password", "Icinga Password").Envar("SIGNALILO_ICINGA_PASSWORD").Required().StringVar(&s.config.IcingaConfig.Password)
 	serve.Flag("icinga_insecure_tls", "Skip Icinga TLS verification").Envar("SIGNALILO_ICINGA_INSECURE_TLS").Default("false").BoolVar(&s.config.IcingaConfig.InsecureTLS)
@@ -189,6 +236,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_service_checks_interval", "Interval (in seconds) to be used for icinga check_interval and retry_interval").Envar("SIGNALILO_ICINGA_SERVICE_CHECKS_INTERVAL").Default("12h").DurationVar(&s.config.ChecksInterval)
 	serve.Flag("icinga_service_max_check_attempts", "The maximum number of checks which are executed before changing to a hard state").Envar("SIGNALILO_ICINGA_SERVICE_MAX_CHECK_ATTEMPTS").Default("1").IntVar(&s.config.MaxCheckAttempts)
 	serve.Flag("icinga_static_service_var", "A variable to be set on each Icinga service created by Signalilo. The expected format is variable=value. Can be repeated.").Envar("SIGNALILO_ICINGA_STATIC_SERVICE_VAR").StringMapVar(&s.config.StaticServiceVars)
+	serve.Flag("icinga_reconnect", "If it's set, Signalilo to waits for a reconnect instead of switching immediately to another URL.").Envar("SIGNALILO_ICINGA_RECONNECT").Default("0").DurationVar(&s.config.Reconnect)
 
 	// Alert manager configuration
 	serve.Flag("alertmanager_port", "Listening port for the Alertmanager webhook").Default("8888").Envar("SIGNALILO_ALERTMANAGER_PORT").IntVar(&s.port)
