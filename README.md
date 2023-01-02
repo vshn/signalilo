@@ -85,6 +85,10 @@ Optional
   This should be set to a multiple of alertmanager `repeat_interval` in case active checks are enabled (e.g. `1.1 < icinga_service_checks_interval/repeat_interval < 5`, default: 43200s).
 * `--icinga_service_max_check_attempts`/`SIGNALILO_ICINGA_SERVICE_MAX_CHECKS_ATTEMPTS`:
   The maximum number of checks which are executed before changing to a hard state.
+* `--icinga_service_template`/`SIGNALILO_ICINGA_SERVICE_TEMPLATE`:
+  Creates an icinga service with the given template. It's possible to specify one or more service templates. (default: "generic-service").
+  The Parameter content will be split on newline character `\n`, e.g. `"generic-service\nexample-template"` creates a service with `generic-service` and `example-template`.
+  Please keep in mind that `generic-service` will be overwritten if the parameter is specified.
 * `--icinga_reconnect`/`SIGNALILO_ICINGA_RECONNECT`:
   If it's set, Signalilo to waits for a reconnect instead of switching immediately to another URL.
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:

@@ -232,6 +232,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_gc_interval", "Garbage collection interval for old alerts").Envar("SIGNALILO_ICINGA_GC_INTERVAL").Default("15m").DurationVar(&s.config.GcInterval)
 	serve.Flag("icinga_keep_for", "How long to keep old alerts around after they've been resolved").Envar("SIGNALILO_ICINGA_KEEP_FOR").Default("168h").DurationVar(&s.config.KeepFor)
 	serve.Flag("icinga_ca", "A custom CA certificate to use when connecting to the Icinga API").Envar("SIGNALILO_ICINGA_CA").StringVar(&s.config.CAData)
+	serve.Flag("icinga_service_template", "Create icinga services with the given template (can be repeated). The default is \"generic-service\"").Envar("SIGNALILO_ICINGA_SERVICE_TEMPLATE").Default("generic-service").StringsVar(&s.config.IcingaConfig.Templates)
 	serve.Flag("icinga_service_checks_active", "Create icinga services as active checks").Envar("SIGNALILO_ICINGA_SERVICE_CHECKS_ACTIVE").Default("false").BoolVar(&s.config.ActiveChecks)
 	serve.Flag("icinga_service_checks_command", "Specify icinga check command during service creation").Envar("SIGNALILO_ICINGA_SERVICE_CHECKS_COMMAND").Default("dummy").StringVar(&s.config.CheckCommand)
 	serve.Flag("icinga_service_checks_interval", "Interval (in seconds) to be used for icinga check_interval and retry_interval").Envar("SIGNALILO_ICINGA_SERVICE_CHECKS_INTERVAL").Default("12h").DurationVar(&s.config.ChecksInterval)

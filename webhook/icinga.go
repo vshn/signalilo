@@ -127,8 +127,8 @@ func createServiceData(hostname string,
 		HostName:           hostname,
 		CheckCommand:       config.CheckCommand,
 		EnableActiveChecks: config.ActiveChecks,
-		Vars:               serviceVars,
 		Notes:              alert.Annotations["description"],
+		Vars:               serviceVars,
 		ActionURL:          alert.GeneratorURL,
 		NotesURL:           alert.Annotations["runbook_url"],
 		CheckInterval:      config.ChecksInterval.Seconds(),
@@ -137,6 +137,7 @@ func createServiceData(hostname string,
 		// periods are already managed by Prometheus/Alertmanager and relevant
 		// config parameter defaults to 1, but is still tunable for other usecases
 		MaxCheckAttempts: float64(config.MaxCheckAttempts),
+		Templates:        config.IcingaConfig.Templates,
 	}
 
 	// Check if this is a heartbeat service. Adjust serviceData
@@ -186,17 +187,22 @@ func updateOrCreateService(icinga icinga2.Client,
 	status := severityToExitStatus(alert.Status, alert.Labels["severity"], c.GetConfig().MergedSeverityLevels)
 
 	serviceData := createServiceData(hostname, serviceName, displayName, alert, status, heartbeatInterval, c)
-
 	icingaSvc, err := icinga.GetService(serviceData.FullName())
 	// update or create service, depending on whether object exists
 	if err == nil {
 		l.Infof("updating service: %+v\n", icingaSvc.Name)
+
+		// Templates needs to be ignored if the service is already created due to the Error:
+		// Attribute 'templates' could not be set: Error: Attribute cannot be modified.
+		serviceData.Templates = nil
+
 		err := icinga.UpdateService(serviceData)
 		if err != nil {
 			return serviceData, err
 		}
 	} else if status > 0 {
-		l.Infof("creating service: %+v\n", serviceName)
+		l.Infof("creating service: %+v with templates: %v\n", serviceName, serviceData.Templates)
+
 		err := icinga.CreateService(serviceData)
 		if err != nil {
 			return serviceData, err

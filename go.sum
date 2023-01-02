@@ -529,8 +529,8 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/subosito/gotenv v1.4.1/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
-github.com/vshn/go-icinga2-client v0.0.16 h1:+Bn0+HnJXMS1kFdpG+30LcoroFL7jQA16z9Cp+aSbWk=
-github.com/vshn/go-icinga2-client v0.0.16/go.mod h1:zT3rZf1cP0uTiXfwyhMCt+WA4woFG1XvMPwDRNVKbcM=
+github.com/vshn/go-icinga2-client v0.0.17 h1:iIj43IcG1bs3nI7kO569rvP9R6oqyB4RNKiB6ax/hGU=
+github.com/vshn/go-icinga2-client v0.0.17/go.mod h1:zT3rZf1cP0uTiXfwyhMCt+WA4woFG1XvMPwDRNVKbcM=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2/go.mod h1:1WAq6h33pAW+iRreB34OORO2Nf7qel3VV3fjBj+hCSs=
 github.com/xdg-go/scram v1.1.1/go.mod h1:RaEWvsqvNKKvBPvcKeFjrG2cJqOkHTiyTpzz23ni57g=
