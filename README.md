@@ -191,6 +191,15 @@ object Host "signalilo_cluster.example.com"  {
 }
 ```
 
+### Icinga service template
+
+You need to create an Icinga service template which Signalilo can use to create own services.
+
+```
+template Service "generic-service" {
+}
+```
+
 ### Icinga API user
 
 We recommend that you create an API user per Icinga service host.
