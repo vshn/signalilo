@@ -64,6 +64,8 @@ Optional
   If true, disable strict TLS checking of Icinga2 API SSL certificate (default: false).
 * `--icinga_disable_keepalives`/`SIGNALILO_ICINGA_DISABLE_KEEPALIVES`:
   If true, disable http keep-alives with Icinga2 API and will only use the connection to the server for a single HTTP request (default: false).
+* `--icinga_display_name_as_service_name`/`SIGNALILO_ICINGA_DISPLAY_NAME_AS_SERVICE_NAME`:
+  If true, will leave display name same as service name. Useful for users who monitor alerts in Nagstamon (default: false).
 * `--icinga_debug`/`SIGNALILO_ICINGA_DEBUG`:
   If true, enable debugging mode in Icinga client (default: false).
 * `--icinga_gc_interval`/`SIGNALILO_ICINGA_GC_INTERVAL`:

@@ -56,23 +56,24 @@ type alertManagerConfig struct {
 }
 
 type SignaliloConfig struct {
-	UUID                 string
-	HostName             string
-	IcingaConfig         icingaConfig
-	GcInterval           time.Duration
-	AlertManagerConfig   alertManagerConfig
-	HeartbeatInterval    time.Duration
-	LogLevel             int
-	KeepFor              time.Duration
-	CAData               string
-	StaticServiceVars    map[string]string
-	CustomSeverityLevels map[string]string
-	MergedSeverityLevels map[string]int
-	ActiveChecks         bool
-	ChecksInterval       time.Duration
-	CheckCommand         string
-	MaxCheckAttempts     int
-	Reconnect            time.Duration
+	UUID                     string
+	HostName                 string
+	IcingaConfig             icingaConfig
+	GcInterval               time.Duration
+	AlertManagerConfig       alertManagerConfig
+	HeartbeatInterval        time.Duration
+	LogLevel                 int
+	DisplayNameAsServiceName bool
+	KeepFor                  time.Duration
+	CAData                   string
+	StaticServiceVars        map[string]string
+	CustomSeverityLevels     map[string]string
+	MergedSeverityLevels     map[string]int
+	ActiveChecks             bool
+	ChecksInterval           time.Duration
+	CheckCommand             string
+	MaxCheckAttempts         int
+	Reconnect                time.Duration
 }
 
 func ConfigInitialize(configuration Configuration) {
@@ -258,14 +259,15 @@ func NewMockConfiguration(verbosity int) Configuration {
 		AlertManagerConfig: alertManagerConfig{
 			BearerToken: "aaaaaa",
 		},
-		HeartbeatInterval: 1 * time.Minute,
-		LogLevel:          2,
-		KeepFor:           5 * time.Minute,
-		CAData:            "",
-		ActiveChecks:      false,
-		ChecksInterval:    12 * time.Hour,
-		CheckCommand:      "dummy",
-		MaxCheckAttempts:  1,
+		HeartbeatInterval:        1 * time.Minute,
+		LogLevel:                 2,
+		DisplayNameAsServiceName: false,
+		KeepFor:                  5 * time.Minute,
+		CAData:                   "",
+		ActiveChecks:             false,
+		ChecksInterval:           12 * time.Hour,
+		CheckCommand:             "dummy",
+		MaxCheckAttempts:         1,
 	}
 	mockCfg := &MockConfiguration{
 		config: signaliloCfg,
