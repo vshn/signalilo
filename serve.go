@@ -226,6 +226,7 @@ func configureServeCommand(app *kingpin.Application) {
 	serve.Flag("icinga_insecure_tls", "Skip Icinga TLS verification").Envar("SIGNALILO_ICINGA_INSECURE_TLS").Default("false").BoolVar(&s.config.IcingaConfig.InsecureTLS)
 	serve.Flag("icinga_x509_verify_cn", "Use CN when verifying certificates. Overrides the default go1.15 behavior of rejecting certificates without matching SAN.").Envar("SIGNALILO_ICINGA_X509_VERIFY_CN").Default("true").BoolVar(&s.config.IcingaConfig.X509VerifyCN)
 	serve.Flag("icinga_disable_keepalives", "Disable HTTP keepalives").Envar("SIGNALILO_ICINGA_DISABLE_KEEPALIVES").Default("false").BoolVar(&s.config.IcingaConfig.DisableKeepAlives)
+	serve.Flag("icinga_display_name_as_service_name", "Leave display name as service name").Envar("SIGNALILO_ICINGA_DISPLAY_NAME_AS_SERVICE_NAME").Default("false").BoolVar(&s.config.DisplayNameAsServiceName)
 	serve.Flag("icinga_debug", "Enable debug-level logging for icinga2 client library").Envar("SIGNALILO_ICINGA_DEBUG").Default("false").BoolVar(&s.config.IcingaConfig.Debug)
 	serve.Flag("icinga_heartbeat_interval", "Heartbeat interval to Icinga").Envar("SIGNALILO_ICINGA_HEARTBEAT_INTERVAL").Default("1m").DurationVar(&s.config.HeartbeatInterval)
 	serve.Flag("icinga_gc_interval", "Garbage collection interval for old alerts").Envar("SIGNALILO_ICINGA_GC_INTERVAL").Default("15m").DurationVar(&s.config.GcInterval)

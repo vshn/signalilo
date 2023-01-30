@@ -119,9 +119,14 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		if err != nil {
 			l.Errorf("Unable to compute internal service name: %v", err)
 		}
-		displayName, err := computeDisplayName(data, alert)
-		if err != nil {
-			l.Errorf("Unable to compute service display name: %v", err)
+		var displayName string
+		if c.GetConfig().DisplayNameAsServiceName {
+			displayName = serviceName
+		} else {
+			displayName, err = computeDisplayName(data, alert)
+			if err != nil {
+				l.Errorf("Unable to compute service display name: %v", err)
+			}
 		}
 
 		// Update or create service in icinga
