@@ -99,31 +99,6 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		return
 	}
 
-	if name, ok := data.CommonLabels["instance"]; ok {
-		l.V(2).Infof("Creating host %v", name)
-		host, err = icinga.GetHost(serviceHost)
-		if err != nil {
-			err := icinga.CreateHost(icinga2.Host{
-				Name:        name,
-				DisplayName: name,
-				Notes:       "Created by signalio",
-			})
-			if err != nil {
-				l.Errorf("Could not create service host %v: %v\n", host, err)
-				asJSON(w, http.StatusInternalServerError, err.Error())
-				return
-			}
-			host, err = icinga.GetHost(serviceHost)
-			if err != nil {
-				l.Errorf("Did not find service host %v: %v\n", host, err)
-				asJSON(w, http.StatusInternalServerError, err.Error())
-				return
-			}
-		}
-	} else {
-		l.V(2).Infof("No instance label")
-	}
-
 	sameAlertName := false
 	groupedAlertName, sameAlertName := data.GroupLabels["alertname"]
 	if sameAlertName {
@@ -132,7 +107,39 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		l.V(2).Infof("Grouped alerts without matching alertname: %d alerts", len(data.Alerts))
 	}
 
+	// For dynamic creation of hosts. This map contains the hosts we have
+	// already seen.
+	hosts := map[string]struct{}{
+		serviceHost: {},
+	}
+
 	for _, alert := range data.Alerts {
+		if c.GetConfig().CreateHosts {
+			if name, ok := alert.Labels[c.GetConfig().CreateHostsLabel]; ok {
+				l.V(2).Infof("Using dynamic host %v", name)
+				if _, ok := hosts[name]; !ok {
+					// We haven't seen this host yet.
+					host, err = icinga.GetHost(name)
+					if err != nil {
+						// Host does not exist.
+						err := icinga.CreateHost(icinga2.Host{
+							Name:        name,
+							DisplayName: name,
+							Notes:       "Created by signalilo.",
+							Address:     name,
+						})
+						if err != nil {
+							l.Errorf("Could not create service host %v: %v\n", host, err)
+							asJSON(w, http.StatusInternalServerError, err.Error())
+							return
+						}
+					}
+					hosts[name] = struct{}{}
+				}
+				serviceHost = name
+			}
+		}
+
 		l.V(2).Infof("Processing %v alert: alertname=%v, severity=%v, message=%v",
 			alert.Status,
 			alert.Labels["alertname"],

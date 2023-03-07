@@ -87,6 +87,10 @@ Optional
   The maximum number of checks which are executed before changing to a hard state.
 * `--icinga_reconnect`/`SIGNALILO_ICINGA_RECONNECT`:
   If it's set, Signalilo to waits for a reconnect instead of switching immediately to another URL.
+* `--icinga_create_hosts`/`SIGNALILO_ICINGA_CREATE_HOSTS`:
+  If true, Signalilo will automatically create hosts dynamically based on a label (default: false).
+* `--icinga_create_hosts_label`/`SIGNALILO_ICINGA_CREATE_HOSTS_LABEL`:
+  Label used as hostname to create hosts if `--icinga_create_hosts` is enabled (default: instance).
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:
   Port on which Signalilo listens to incoming webhooks (default 8888).
 * `--alertmanager_bearer_token`/`SIGNALILO_ALERTMANAGER_BEARER_TOKEN`:
@@ -307,6 +311,20 @@ Signalilo will try to parse the value of that label as a [Go duration].
 If the value is parsed successfully, Signalilo will create an Icinga service check with active checks enabled and with the check interval set to the parsed duration plus ten percent.
 We add ten percent to the parsed duration to account for network latencies etc., which could otherwise lead to flapping heartbeat checks.
 
+### Dynamic Host Creation
+
+Signalilo supports dynamic creation of Icinga2 hosts based on a label
+included in the alert. This allows for easy and automatic creation of host
+objects in Icinga2 as needed, simplifying the process of associating alerts and
+systems.
+
+To enable this feature, set the `icinga_create_hosts` flag to true and set
+`icinga_create_hosts_label` to the label that should be used as the hostname to
+create the host (default: *instance*). When an alert is received with a label
+matching the specified label, Signalilo will attempt to create a host with the
+specified name. If a host with that name already exists, the alert will be
+associated with that host.  If the host does not exist, Signalilo will attempt
+to create one before associating the alert with it.
 
 [Go duration]: https://golang.org/pkg/time/#ParseDuration
 

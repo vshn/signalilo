@@ -74,6 +74,8 @@ type SignaliloConfig struct {
 	CheckCommand             string
 	MaxCheckAttempts         int
 	Reconnect                time.Duration
+	CreateHosts              bool
+	CreateHostsLabel         string
 }
 
 func ConfigInitialize(configuration Configuration) {
