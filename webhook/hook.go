@@ -99,6 +99,28 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 		return
 	}
 
+	if name, ok := data.CommonLabels["instance"]; ok {
+		host, err = icinga.GetHost(serviceHost)
+		if err != nil {
+			err := icinga.CreateHost(icinga2.Host{
+				Name:        name,
+				DisplayName: name,
+				Notes:       "Created by signalio",
+			})
+			if err != nil {
+				l.Errorf("Could not create service host %v: %v\n", host, err)
+				asJSON(w, http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+		host, err = icinga.GetHost(serviceHost)
+		if err != nil {
+			l.Errorf("Did not find service host %v: %v\n", host, err)
+			asJSON(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
 	sameAlertName := false
 	groupedAlertName, sameAlertName := data.GroupLabels["alertname"]
 	if sameAlertName {
