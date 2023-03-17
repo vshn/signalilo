@@ -88,7 +88,7 @@ Optional
 * `--icinga_reconnect`/`SIGNALILO_ICINGA_RECONNECT`:
   If it's set, Signalilo to waits for a reconnect instead of switching immediately to another URL.
 * `--icinga_create_hosts`/`SIGNALILO_ICINGA_CREATE_HOSTS`:
-  If true, Signalilo will automatically create hosts dynamically based on a label (default: false).
+  If set, Signalilo will automatically create hosts dynamically based on a label (default: false).
 * `--icinga_create_hosts_label`/`SIGNALILO_ICINGA_CREATE_HOSTS_LABEL`:
   Label used as hostname to create hosts if `--icinga_create_hosts` is enabled (default: instance).
 * `--alertmanager_port`/`SIGNALILO_ALERTMANAGER_PORT`:
