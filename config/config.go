@@ -32,6 +32,7 @@ type icingaConfig struct {
 	InsecureTLS       bool
 	X509VerifyCN      bool
 	DisableKeepAlives bool
+	Templates         []string
 	Debug             bool
 }
 
@@ -254,6 +255,7 @@ func NewMockConfiguration(verbosity int) Configuration {
 			InsecureTLS:       true,
 			DisableKeepAlives: false,
 			Debug:             false,
+			Templates:         []string{"generic-service", "example-template"},
 		},
 		GcInterval: 1 * time.Minute,
 		AlertManagerConfig: alertManagerConfig{
