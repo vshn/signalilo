@@ -14,12 +14,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/bketelsen/logr"
 	"github.com/vshn/go-icinga2-client/icinga2"
 	"github.com/vshn/signalilo/config"
 	"github.com/vshn/signalilo/gc"
 	"github.com/vshn/signalilo/webhook"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // ServeCommand holds all the configuration and objects necessary to serve the
