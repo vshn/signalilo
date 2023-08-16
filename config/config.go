@@ -58,6 +58,7 @@ type alertManagerConfig struct {
 
 type SignaliloConfig struct {
 	UUID                     string
+	DynamicHostNameLabel     string
 	HostName                 string
 	IcingaConfig             icingaConfig
 	GcInterval               time.Duration

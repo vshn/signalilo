@@ -220,6 +220,7 @@ func configureServeCommand(app *kingpin.Application) {
 
 	// Icinga2 client configuration
 	serve.Flag("icinga_hostname", "Icinga Servicehost Name").Envar("SIGNALILO_ICINGA_HOSTNAME").Required().StringVar(&s.config.HostName)
+	serve.Flag("icinga_dynamic_hostname_label", "Icinga Dynamic Servicehost AlertManager label").Envar("SIGNALILO_ICINGA_DYNAMIC_HOSTNAME_LABEL").Default("").StringVar(&s.config.DynamicHostNameLabel)
 	serve.Flag("icinga_url", "Icinga API URL (can be repeated)").Envar("SIGNALILO_ICINGA_URL").Required().StringsVar(&s.config.IcingaConfig.URL)
 	serve.Flag("icinga_username", "Icinga Username").Envar("SIGNALILO_ICINGA_USERNAME").Required().StringVar(&s.config.IcingaConfig.User)
 	serve.Flag("icinga_password", "Icinga Password").Envar("SIGNALILO_ICINGA_PASSWORD").Required().StringVar(&s.config.IcingaConfig.Password)
