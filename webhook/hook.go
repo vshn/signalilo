@@ -129,6 +129,25 @@ func Webhook(w http.ResponseWriter, r *http.Request, c config.Configuration) {
 			}
 		}
 
+		// Check if dynamic host label config option is enabled
+		// Will use default HostName if not enabled, not a valid ServiceHost in Icinga2 or if dynamic host label is not present in alert
+		if c.GetConfig().DynamicHostNameLabel != "" {
+			// Check if dynamic host label is present in alert
+			if _, ok := alert.Labels[c.GetConfig().DynamicHostNameLabel]; ok {
+				// Set hostname to dynamic host label value
+				serviceHost = alert.Labels[c.GetConfig().DynamicHostNameLabel]
+				l.V(2).Infof("Check service host: %v", serviceHost)
+				host, err := icinga.GetHost(serviceHost)
+				if err != nil {
+					serviceHost = c.GetConfig().HostName
+					l.Errorf("Did not find service host using dynamic host label %v: %v - Using default HostName %v", host, err, serviceName)
+					asJSON(w, http.StatusInternalServerError, err.Error())
+				}
+			} else {
+				serviceHost = c.GetConfig().HostName
+			}
+		}
+
 		// Update or create service in icinga
 		svc, err := updateOrCreateService(icinga, serviceHost, serviceName, displayName, alert, c)
 		if err != nil {

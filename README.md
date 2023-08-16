@@ -72,6 +72,8 @@ Optional
   Interval to run Garbage collection of recovered alerts in Icinga (default 15m).
 * `--icinga_heartbeat_interval`/`SIGNALILO_ICINGA_HEARTBEAT_INTERVAL`:
   Interval to send heartbeat to Icinga (default 60s).
+* `--icinga_dynamic_hostname_label`/`SIGNALILO_ICINGA_DYNAMIC_HOSTNAME_LABEL`:
+  AlertManager Alert label to get the Icinga2 Hostname value from. If not set or found in Icinga2, the Service will be created for SIGNALILO_ICINGA_HOSTNAME.
 * `--icinga_keep_for`/`SIGNALILO_ICINGA_KEEP_FOR`:
   How long to keep Icinga2 services around after they transition to state OK (default 168h).
 * `--icinga_ca`/`SIGNALILO_ICINGA_CA`:
